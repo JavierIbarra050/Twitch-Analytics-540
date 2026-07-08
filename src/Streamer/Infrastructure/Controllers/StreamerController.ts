@@ -6,22 +6,25 @@ export class StreamerController {
         private readonly streamerService: StreamerService,
     ) { }
 
+    private convertIdToNumber(idParam: any): boolean | number {
+        try {
+            return parseInt(idParam);
+        } catch {
+            return false;
+        }
+    }
+
     public getStreamerById = async (req: Request, res: Response): Promise<void> => {
         try {
             const idParam = req.query.id;
+            const idParamNumber = this.convertIdToNumber(idParam);
 
-            if (!idParam || typeof idParam !== 'string') {
+            if(typeof idParamNumber === 'boolean') {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
                 return;
             }
 
-            const parsedId = Number(idParam);
-            if (isNaN(parsedId)) {
-                res.status(400).json({ error: "Invalid or missing 'id' parameter." });
-                return;
-            }
-
-            const streamer = await this.streamerService.getStreamerById(parsedId);
+            const streamer = await this.streamerService.getStreamerById(idParamNumber);
 
             res.status(200).json({
                 id: streamer.id.toString(),
@@ -35,6 +38,7 @@ export class StreamerController {
                 view_count: streamer.viewCount,
                 created_at: streamer.createdAt.toISOString()
             });
+            
         } catch (error: any) {
             if (error.message && error.message.includes("not found")) {
                 res.status(404).json({ error: "User not found." });

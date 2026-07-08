@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TwitchRepository = void 0;
 const axios_1 = __importDefault(require("axios"));
-const Streamer_1 = require("../../Domain/Entities/Streamer");
 class TwitchRepository {
     clientId = process.env.TWITCH_CLIENT_ID || '';
     clientSecret = process.env.TWITCH_CLIENT_SECRET || '';
@@ -40,7 +39,17 @@ class TwitchRepository {
             return null;
         }
         const twitchUser = users[0];
-        return new Streamer_1.Streamer(Number(twitchUser.id), twitchUser.display_name, twitchUser.type, twitchUser.broadcaster_type, twitchUser.description, twitchUser.profile_image_url, twitchUser.offline_image_url, twitchUser.view_count, new Date(twitchUser.created_at));
+        return {
+            id: Number(twitchUser.id),
+            displayName: twitchUser.display_name,
+            type: twitchUser.type,
+            breadcasterType: twitchUser.broadcaster_type,
+            description: twitchUser.description,
+            profileImageUrl: twitchUser.profile_image_url,
+            offlineImageUrl: twitchUser.offline_image_url,
+            viewCount: twitchUser.view_count,
+            createdAt: new Date(twitchUser.created_at)
+        };
     }
 }
 exports.TwitchRepository = TwitchRepository;
