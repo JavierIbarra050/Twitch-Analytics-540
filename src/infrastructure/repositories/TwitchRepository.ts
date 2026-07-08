@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 import { Streamer } from "../../domain/entities/Streamer";
-import { ITwitchRepository } from "../../domain/interfaces/ITwitchRepository";
-import { TwitchUserResponse } from 'domain/interfaces/TwitchUserReponses';
-import { TwitchTokenResponse } from "domain/interfaces/TwitchTokenReponse";
+import { ITwitchRepository } from "../../domain/interfaces/twitchInterfaces/ITwitchRepository";
+import { TwitchUserResponse } from 'domain/interfaces/twitchInterfaces/TwitchUserReponses';
+import { TwitchTokenResponse } from "domain/interfaces/twitchInterfaces/TwitchTokenReponse";
 
 export class TwitchRepository implements ITwitchRepository {
     private readonly clientId = process.env.TWITCH_CLIENT_ID || '';
