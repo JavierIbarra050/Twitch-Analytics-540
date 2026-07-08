@@ -24,16 +24,16 @@ export class StreamerController {
             const streamer = await this.streamerService.getStreamerById(parsedId);
 
             res.status(200).json({
-                id: streamer.getStreamerId().toString(),
-                login: streamer.getDisplayName().toLowerCase().replace(/\s+/g, ''),
-                display_name: streamer.getDisplayName(),
-                type: streamer.getType(),
-                broadcaster_type: streamer.getBreadcasterType(),
-                description: streamer.getDescription(),
-                profile_image_url: streamer.getProfileImageUrl(),
-                offline_image_url: streamer.getOfflineImageUrl(),
-                view_count: streamer.getViewCount(),
-                created_at: streamer.getCreatedAt().toISOString()
+                id: streamer.id.toString(),
+                login: streamer.displayName.toLowerCase().replace(/\s+/g, ''),
+                display_name: streamer.displayName,
+                type: streamer.type,
+                broadcaster_type: streamer.breadcasterType,
+                description: streamer.description,
+                profile_image_url: streamer.profileImageUrl,
+                offline_image_url: streamer.offlineImageUrl,
+                view_count: streamer.viewCount,
+                created_at: streamer.createdAt.toISOString()
             });
         } catch (error: any) {
             if (error.message && error.message.includes("not found")) {
