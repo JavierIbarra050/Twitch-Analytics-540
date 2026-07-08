@@ -11,5 +11,39 @@ export class Streamer {
         private readonly createdAt: Date,
     ) { }
 
-    
+    public getStreamerId(): number {
+        return this.id;
+    }
+
+    public getDisplayName(): string {
+        return this.displayName;
+    }
+
+    public getType(): string {
+        return this.type;
+    }
+
+    public getBreadcasterType(): string {
+        return this.breadcasterType;
+    }
+
+    public getDescription(): string {
+        return this.description;
+    }
+
+    public getProfileImageUrl(): string {
+        return this.profileImageUrl;
+    }
+
+    public getOfflineImageUrl(): string {
+        return this.offlineImageUrl;
+    }
+
+    public getViewCount(): number {
+        return this.viewCount;
+    }
+
+    public getCreatedAt(): Date {
+        return this.createdAt;
+    }
 }

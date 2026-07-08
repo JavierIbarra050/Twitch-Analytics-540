@@ -1,0 +1,5 @@
+import { Streamer } from "../../entities/Streamer";
+
+export interface ITwitchRepository {
+    searchStreamerById(id: number): Promise<Streamer | null>
+}
