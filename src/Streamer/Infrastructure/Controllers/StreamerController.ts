@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { StreamerService } from "application/services/StreamerService";
+import { StreamerService } from "../../Application/Services/StreamerService";
 
 export class StreamerController {
     constructor ( 

@@ -1,5 +1,5 @@
-import { Streamer } from "domain/entities/Streamer";
-import { ITwitchRepository } from "domain/interfaces/twitchInterfaces/ITwitchRepository";
+import { Streamer } from "../../Domain/Entities/Streamer";
+import { ITwitchRepository } from "../../Domain/Repositories/ITwitchRepository";
 
 export class StreamerService {
     constructor (

@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { TwitchRepository } from '../../repositories/TwitchRepository';
-import { StreamerService } from '../../../application/services/StreamerService';
-import { StreamerController } from '../controllers/StreamerController';
+import { TwitchRepository } from '../Repositories/TwitchRepository';
+import { StreamerService } from '../../Application/Services/StreamerService';
+import { StreamerController } from '../Controllers/StreamerController';
 
 const router = Router();
 

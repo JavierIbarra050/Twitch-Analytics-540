@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import analyticsRoutes from './infrastructure/http/routes/analyticsRoutes';
+import analyticsRoutes from "./Streamer/Infrastructure/Routes/analyticsRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;

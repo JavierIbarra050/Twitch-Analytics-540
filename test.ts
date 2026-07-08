@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
-import { TwitchRepository } from "./src/infrastructure/repositories/TwitchRepository";
-
+import { TwitchRepository } from "./src/Streamer/Infrastructure/Repositories/TwitchRepository";
 dotenv.config(); 
 
 

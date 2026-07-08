@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-import { User } from "domain/entities/User";
-import { IUserRepository } from "domain/interfaces/IUserRepository";
+import { User } from "../../domain/entities/User";
+import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 
 export class UserService {
     constructor (
