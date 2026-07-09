@@ -21,4 +21,27 @@ export class UserRepositorySQL implements IUserRepository {
         );
         return new User(email, apiKey);
     }
+
+    async findByEmail(email: string): Promise<User | null> {
+        const db = await getDatabase();
+        const row = await db.get<{ email: string; api_key: string }>(
+            'SELECT email, api_key FROM users WHERE email = ?',
+            [email]
+        );
+        if (!row) return null;
+        return new User(row.email, row.api_key);
+    }
+
+    async saveToken(email: string, token: string, expiresAt: Date): Promise<void> {
+        const db = await getDatabase();
+        const user = await db.get<{ id: number }>(
+            'SELECT id FROM users WHERE email = ?',
+            [email]
+        );
+        if (!user) throw new Error(`User not found for email: ${email}`);
+        await db.run(
+            'INSERT INTO user_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+            [user.id, token, expiresAt.toISOString()]
+        );
+    }
 }
