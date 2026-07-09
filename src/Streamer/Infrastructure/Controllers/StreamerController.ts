@@ -6,20 +6,19 @@ export class StreamerController {
         private readonly streamerService: StreamerService,
     ) { }
 
-    private convertIdToNumber(idParam: any): boolean | number {
-        try {
-            return parseInt(idParam);
-        } catch {
-            return false;
-        }
-    }
 
     public getStreamerById = async (req: Request, res: Response): Promise<void> => {
         try {
             const idParam = req.query.id;
-            const idParamNumber = this.convertIdToNumber(idParam);
 
-            if(typeof idParamNumber === 'boolean') {
+            if (!idParam) {
+                res.status(400).json({ error: "Invalid or missing 'id' parameter." });
+                return;
+            }
+
+            const idParamNumber = parseInt(idParam as string, 10);
+
+            if (isNaN(idParamNumber)) {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
                 return;
             }
