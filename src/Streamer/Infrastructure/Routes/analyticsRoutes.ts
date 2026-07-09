@@ -41,7 +41,7 @@ const gameCacheRepository = new SQLiteGameCacheRepository();
 const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);
 const topOfTheTopsController = new TopOfTheTopsController(topOfTheTopsService);
 
-router.get('/streamer', streamerController.getStreamerById);
+router.get('/streamer', authMiddleware.execute, streamerController.getStreamerById);
 router.get('/streams', streamController.getLiveStreams);
 router.get('/streams/enriched', authMiddleware.execute.bind(authMiddleware), enrichedStreamController.getTopEnrichedStreams.bind(enrichedStreamController));
 router.get('/topsofthetops', authMiddleware.execute.bind(authMiddleware), topOfTheTopsController.getTopOfTheTops.bind(topOfTheTopsController));
