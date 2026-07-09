@@ -14,29 +14,37 @@ import { EnrichedStreamService } from '../../../EnrichedStream/Application/Servi
 import { EnrichedStreamController } from '../../../EnrichedStream/Infrastructure/Controller/EnrichedStreamController';
 import { AuthMiddleware } from '../../../Shared/Infrastructure/Middlewares/AuthMiddleware';
 
+import { SQLiteGameCacheRepository } from '../../../TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';
+import { TwitchClient as TopOfTheTopsTwitchClient } from '../../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
+import { TopOfTheTopsService } from '../../../TopOfTheTops/Application/Services/TopOfTheTopsService';
+import { TopOfTheTopsController } from '../../../TopOfTheTops/Infrastructure/Controller/TopOfTheTopsController';
+
 const router = Router();
 
 const twitchHttpClient = new TwitchHttpClient();
 const authMiddleware = new AuthMiddleware();
 
-// Streamer
 const streamerRepository = new StreamerTwitchRepository(twitchHttpClient);
 const streamerService = new StreamerService(streamerRepository);
 const streamerController = new StreamerController(streamerService);
 
-// Stream
 const streamRepository = new StreamTwitchRepository(twitchHttpClient);
 const streamService = new StreamService(streamRepository);
 const streamController = new StreamController(streamService);
 
-// EnrichedStream
 const enrichedStreamClient = new TwitchClient(twitchHttpClient);
 const enrichedStreamService = new EnrichedStreamService(enrichedStreamClient);
 const enrichedStreamController = new EnrichedStreamController(enrichedStreamService);
 
+const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpClient);
+const gameCacheRepository = new SQLiteGameCacheRepository();
+const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);
+const topOfTheTopsController = new TopOfTheTopsController(topOfTheTopsService);
+
 router.get('/streamer', streamerController.getStreamerById);
 router.get('/streams', streamController.getLiveStreams);
 router.get('/streams/enriched', authMiddleware.execute.bind(authMiddleware), enrichedStreamController.getTopEnrichedStreams.bind(enrichedStreamController));
+router.get('/topsofthetops', authMiddleware.execute.bind(authMiddleware), topOfTheTopsController.getTopOfTheTops.bind(topOfTheTopsController));
 
 export default router;
 
