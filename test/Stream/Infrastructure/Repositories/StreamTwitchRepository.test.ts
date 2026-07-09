@@ -28,12 +28,6 @@ describe("StreamTwitchRepository", () => {
     });
 
     describe("getLiveStreams", () => {
-        it("should return empty array if userIds list is empty", async () => {
-            const streams = await repository.getLiveStreams([]);
-            expect(streams).toEqual([]);
-            expect(mockedAxios.get).not.toHaveBeenCalled();
-        });
-
         it("should fetch live streams and map them correctly when streams exist", async () => {
             const twitchStreamMock: TwitchStreamResponse = {
                 data: [
@@ -62,13 +56,10 @@ describe("StreamTwitchRepository", () => {
 
             mockedAxios.get.mockResolvedValue(streamResponse);
 
-            const streams = await repository.getLiveStreams([83232866]);
+            const streams = await repository.getLiveStreams();
 
             expect(mockedAxios.post).toHaveBeenCalledTimes(1);
             expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-
-            const expectedParams = new URLSearchParams();
-            expectedParams.append('user_id', '83232866');
 
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 'https://api.twitch.tv/helix/streams',
@@ -77,7 +68,7 @@ describe("StreamTwitchRepository", () => {
                         'Client-Id': '',
                         'Authorization': 'Bearer mocked-token'
                     },
-                    params: expectedParams
+                    params: new URLSearchParams()
                 }
             );
 
@@ -94,7 +85,7 @@ describe("StreamTwitchRepository", () => {
 
             mockedAxios.get.mockResolvedValue(streamResponse);
 
-            const streams = await repository.getLiveStreams([999999]);
+            const streams = await repository.getLiveStreams();
 
             expect(streams).toEqual([]);
         });
@@ -102,7 +93,7 @@ describe("StreamTwitchRepository", () => {
         it("should propagate error when twitch api for streams fails", async () => {
             mockedAxios.get.mockRejectedValue(new Error("Twitch Helix API error"));
 
-            await expect(repository.getLiveStreams([83232866])).rejects.toThrow("Twitch Helix API error");
+            await expect(repository.getLiveStreams()).rejects.toThrow("Twitch Helix API error");
         });
     });
 });

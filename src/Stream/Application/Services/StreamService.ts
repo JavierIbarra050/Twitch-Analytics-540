@@ -6,7 +6,7 @@ export class StreamService {
         private readonly streamRepository: IStreamExternalRepository,
     ) { }
 
-    async getLiveStreams(userIds: number[]): Promise<Stream[]> {
-        return await this.streamRepository.getLiveStreams(userIds);
+    async getLiveStreams(): Promise<Stream[]> {
+        return await this.streamRepository.getLiveStreams();
     }
 }

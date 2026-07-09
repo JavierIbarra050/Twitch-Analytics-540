@@ -33,11 +33,10 @@ describe("StreamController", () => {
         ];
 
         streamServiceMock.getLiveStreams.mockResolvedValue(expectedStreams);
-        reqMock.query = { ids: "123,456" };
 
         await streamController.getLiveStreams(reqMock as Request, resMock as Response);
 
-        expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith([123, 456]);
+        expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith();
         expect(resMock.status).toHaveBeenCalledWith(200);
         expect(resMock.json).toHaveBeenCalledWith([
             { title: "Charlando", user_name: "Ibai" },
@@ -45,18 +44,8 @@ describe("StreamController", () => {
         ]);
     });
 
-    it("should return 400 status when 'ids' query parameter is missing or invalid", async () => {
-        reqMock.query = { ids: "" };
-
-        await streamController.getLiveStreams(reqMock as Request, resMock as Response);
-
-        expect(resMock.status).toHaveBeenCalledWith(400);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'ids' parameter." });
-    });
-
     it("should return 401 status when service throws Unauthorized error", async () => {
         streamServiceMock.getLiveStreams.mockRejectedValue(new Error("Unauthorized access"));
-        reqMock.query = { ids: "123" };
 
         await streamController.getLiveStreams(reqMock as Request, resMock as Response);
 
@@ -66,7 +55,6 @@ describe("StreamController", () => {
 
     it("should return 500 status when an unexpected error occurs", async () => {
         streamServiceMock.getLiveStreams.mockRejectedValue(new Error("Unexpected system error"));
-        reqMock.query = { ids: "123" };
 
         await streamController.getLiveStreams(reqMock as Request, resMock as Response);
 

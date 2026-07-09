@@ -20,9 +20,9 @@ describe("StreamService", () => {
 
         streamRepositoryMock.getLiveStreams.mockResolvedValue(expectedStreams);
 
-        const streams = await streamService.getLiveStreams([123, 456]);
+        const streams = await streamService.getLiveStreams();
 
-        expect(streamRepositoryMock.getLiveStreams).toHaveBeenCalledWith([123, 456]);
+        expect(streamRepositoryMock.getLiveStreams).toHaveBeenCalledWith();
         expect(streams).toEqual(expectedStreams);
     });
 
@@ -31,7 +31,7 @@ describe("StreamService", () => {
 
         streamRepositoryMock.getLiveStreams.mockResolvedValue([]);
 
-        const streams = await streamService.getLiveStreams([999]);
+        const streams = await streamService.getLiveStreams();
 
         expect(streams).toEqual([]);
     });
@@ -41,6 +41,6 @@ describe("StreamService", () => {
 
         streamRepositoryMock.getLiveStreams.mockRejectedValue(new Error("Twitch Helix API error"));
 
-        await expect(streamService.getLiveStreams([123])).rejects.toThrow("Twitch Helix API error");
+        await expect(streamService.getLiveStreams()).rejects.toThrow("Twitch Helix API error");
     });
 });
