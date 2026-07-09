@@ -24,10 +24,8 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
 
     async saveCachedStats(stats: TopOfTheTops[]): Promise<void> {
         const db = await getDatabase();
-        // Clear previous cache entries using raw SQL
         await db.run("DELETE FROM game_cache");
         
-        // Insert new cache entries using raw SQL
         for (const stat of stats) {
             await db.run(
                 `INSERT INTO game_cache (
@@ -56,7 +54,6 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
             return null;
         }
         
-        // Calculate difference in minutes via raw SQL function calls
         const diffRow = await db.get(
             "SELECT (strftime('%s', 'now') - strftime('%s', ?)) / 60.0 AS diff_minutes",
             [row.last_update]

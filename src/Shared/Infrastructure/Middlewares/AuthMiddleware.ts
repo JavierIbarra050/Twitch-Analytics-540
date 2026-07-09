@@ -15,7 +15,6 @@ export class AuthMiddleware {
 
             const db = await getDatabase();
             
-            // Query using raw SQL to verify token validity and expiration
             const tokenRecord = await db.get(
                 "SELECT * FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
                 [token]
