@@ -49,5 +49,19 @@ export async function initializeDatabase(): Promise<void> {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS game_cache (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      game_id TEXT NOT NULL,
+      game_name TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      total_videos TEXT NOT NULL,
+      total_views TEXT NOT NULL,
+      most_viewed_title TEXT NOT NULL,
+      most_viewed_views TEXT NOT NULL,
+      most_viewed_duration TEXT NOT NULL,
+      most_viewed_created_at TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }
