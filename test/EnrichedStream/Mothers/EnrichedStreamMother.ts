@@ -2,7 +2,7 @@ import { EnrichedStream } from "../../../src/EnrichedStream/Domain/Entities/Enri
 import { RawStream, UserProfile } from "../../../src/EnrichedStream/Domain/Repositories/ITwitchClient";
 
 export class EnrichedStreamMother {
-    static create(params: Partial<ConstructorParameters<typeof EnrichedStream>[0] & {
+    static create(params: Partial<{
         streamId: string;
         userId: string;
         userName: string;
@@ -11,6 +11,7 @@ export class EnrichedStreamMother {
         userDisplayName: string;
         profileImageUrl: string;
     }> = {}): EnrichedStream {
+
         return new EnrichedStream(
             params.streamId ?? "987654321",
             params.userId ?? "111111111",
