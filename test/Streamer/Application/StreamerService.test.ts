@@ -1,14 +1,14 @@
 import { StreamerService } from "Streamer/Application/Services/StreamerService";
-import { TwitchRepository } from "Streamer/Infrastructure/Repositories/TwitchRepository";
+import { IStreamerExternalRepository } from "Streamer/Domain/Repositories/IStreamerExternalRepository";
 import { StreamerMother } from "../Mothers/StreamerMother";
 
 describe("StreamerService", () => {
-    let twitchRepositoryMock: jest.Mocked<TwitchRepository>;
+    let twitchRepositoryMock: jest.Mocked<IStreamerExternalRepository>;
 
     beforeEach(() => {
         twitchRepositoryMock = {
             searchStreamerById: jest.fn(),
-        } as unknown as jest.Mocked<TwitchRepository>;
+        } as unknown as jest.Mocked<IStreamerExternalRepository>;
     });
 
     it("should return the streamer when it is found", async () => {
