@@ -1,9 +1,9 @@
 import { Streamer } from "../../Domain/Entities/Streamer";
-import { ITwitchRepository } from "../../Domain/Repositories/ITwitchRepository";
+import { IStreamerExternalRepository } from "../../Domain/Repositories/IStreamerExternalRepository";
 
 export class StreamerService {
     constructor (
-        private readonly twitchRepository: ITwitchRepository,
+        private readonly twitchRepository: IStreamerExternalRepository,
     ) { }
 
     async getStreamerById(id: number): Promise<Streamer> {
