@@ -1,17 +1,20 @@
 import axios, { AxiosResponse } from 'axios';
-import { TwitchRepository } from "Streamer/Infrastructure/Repositories/TwitchRepository";
+import { StreamerTwitchRepository } from "Streamer/Infrastructure/Repositories/StreamerTwitchRepository";
 import { TwitchUserResponse } from "Streamer/Infrastructure/TwitchResponses/TwitchUserReponses";
-import { TwitchTokenResponse } from "Streamer/Infrastructure/TwitchResponses/TwitchTokenReponse";
+import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
+import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
 
 jest.mock('axios');
 const mockedAxios = jest.mocked(axios);
 
-describe("TwitchRepository", () => {
-    let repository: TwitchRepository;
+describe("StreamerTwitchRepository", () => {
+    let repository: StreamerTwitchRepository;
+    let httpClient: TwitchHttpClient;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        repository = new TwitchRepository();
+        httpClient = new TwitchHttpClient();
+        repository = new StreamerTwitchRepository(httpClient);
         
         const tokenResponse: Partial<AxiosResponse<TwitchTokenResponse>> = {
             data: {
