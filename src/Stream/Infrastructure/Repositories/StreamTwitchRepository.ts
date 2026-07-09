@@ -8,17 +8,10 @@ export class StreamTwitchRepository implements IStreamExternalRepository {
         private readonly httpClient: TwitchHttpClient
     ) {}
 
-    async getLiveStreams(userIds: number[]): Promise<Stream[]> {
-        if (userIds.length === 0) {
-            return [];
-        }
-
-        const params = new URLSearchParams();
-        userIds.forEach(id => params.append('user_id', id.toString()));
-
+    async getLiveStreams(): Promise<Stream[]> {
         const response = await this.httpClient.get<TwitchStreamResponse>(
             'streams',
-            params
+            new URLSearchParams()
         );
 
         return response.data.map(
