@@ -46,6 +46,24 @@ describe("EnrichedStreamController", () => {
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
     });
 
+    it("should return 400 if limit query param contains decimal values", async () => {
+        req.query = { limit: "12.34" };
+
+        await controller.getTopEnrichedStreams(req as Request, res as Response);
+
+        expect(statusMock).toHaveBeenCalledWith(400);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
+    });
+
+    it("should return 400 if limit query param contains non-numeric suffix", async () => {
+        req.query = { limit: "12abc" };
+
+        await controller.getTopEnrichedStreams(req as Request, res as Response);
+
+        expect(statusMock).toHaveBeenCalledWith(400);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
+    });
+
     it("should return 400 if limit query param is less than or equal to 0", async () => {
         req.query = { limit: "0" };
 

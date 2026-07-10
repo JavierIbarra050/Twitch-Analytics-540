@@ -28,8 +28,28 @@ describe('TopOfTheTopsController', () => {
         };
     });
 
-    it('should return 400 Bad Request when since parameter is invalid', async () => {
+    it('should return 400 Bad Request when since parameter is invalid string', async () => {
         req.query = { since: 'invalid_number' };
+
+        await controller.getTopOfTheTops(req as Request, res as Response);
+
+        expect(statusMock).toHaveBeenCalledWith(400);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Bad Request. Invalid or missing parameters." });
+        expect(serviceMock.getTopOfTheTops).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 Bad Request when since parameter contains decimals', async () => {
+        req.query = { since: '12.34' };
+
+        await controller.getTopOfTheTops(req as Request, res as Response);
+
+        expect(statusMock).toHaveBeenCalledWith(400);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Bad Request. Invalid or missing parameters." });
+        expect(serviceMock.getTopOfTheTops).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 Bad Request when since parameter contains non-numeric suffix', async () => {
+        req.query = { since: '12abc' };
 
         await controller.getTopOfTheTops(req as Request, res as Response);
 

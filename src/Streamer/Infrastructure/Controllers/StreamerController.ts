@@ -6,22 +6,16 @@ export class StreamerController {
         private readonly streamerService: StreamerService,
     ) { }
 
-
     public getStreamerById = async (req: Request, res: Response): Promise<void> => {
         try {
             const idParam = req.query.id;
 
-            if (typeof idParam !== 'string') {
+            if (typeof idParam !== 'string' || !/^\d+$/.test(idParam)) {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
                 return;
             }
 
             const idParamNumber = parseInt(idParam, 10);
-
-            if (isNaN(idParamNumber)) {
-                res.status(400).json({ error: "Invalid or missing 'id' parameter." });
-                return;
-            }
 
             const streamer = await this.streamerService.getStreamerById(idParamNumber);
 
