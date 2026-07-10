@@ -2,7 +2,7 @@ export type Streamer = {
     id: number;
     displayName: string;
     type: string;
-    breadcasterType: string;
+    broadcasterType: string;
     description: string;
     profileImageUrl: string;
     offlineImageUrl: string;

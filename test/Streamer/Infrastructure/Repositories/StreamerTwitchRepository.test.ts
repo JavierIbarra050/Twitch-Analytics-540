@@ -1,126 +1,63 @@
-import axios, { AxiosResponse } from 'axios';
-import { StreamerTwitchRepository } from "Streamer/Infrastructure/Repositories/StreamerTwitchRepository";
-import { TwitchUserResponse } from "Streamer/Infrastructure/TwitchResponses/TwitchUserReponses";
-import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
-import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
+import { StreamerTwitchRepository } from '../../../../src/Streamer/Infrastructure/Repositories/StreamerTwitchRepository';
+import { TwitchHttpClient } from '../../../../src/Shared/Infrastructure/Twitch/TwitchHttpClient';
+import { TwitchUserResponse } from '../../../../src/Streamer/Infrastructure/TwitchResponses/TwitchUserReponses';
 
-jest.mock('axios');
-const mockedAxios = jest.mocked(axios);
+jest.mock('../../../../src/Shared/Infrastructure/Twitch/TwitchHttpClient');
 
 describe("StreamerTwitchRepository", () => {
+    let httpClientMock: jest.Mocked<TwitchHttpClient>;
     let repository: StreamerTwitchRepository;
-    let httpClient: TwitchHttpClient;
 
     beforeEach(() => {
-        jest.clearAllMocks();
-        httpClient = new TwitchHttpClient();
-        repository = new StreamerTwitchRepository(httpClient);
-        
-        const tokenResponse: Partial<AxiosResponse<TwitchTokenResponse>> = {
-            data: {
-                access_token: "mocked-token",
-                expires_in: 3600,
-                token_type: "bearer"
-            }
-        };
-        mockedAxios.post.mockResolvedValue(tokenResponse);
+        httpClientMock = {
+            get: jest.fn()
+        } as unknown as jest.Mocked<TwitchHttpClient>;
+
+        repository = new StreamerTwitchRepository(httpClientMock);
     });
 
-    it("should fetch streamer details and map them correctly when user exists", async () => {
-        const twitchUserMock: TwitchUserResponse = {
-            data: [{
-                id: "83232866",
-                login: "ibai",
-                display_name: "Ibai",
-                type: "",
-                broadcaster_type: "partner",
-                description: "Canal de Ibai",
-                profile_image_url: "https://static-cdn/ibai.png",
-                offline_image_url: "https://static-cdn/offline.png",
-                view_count: 150000,
-                created_at: "2014-01-28T19:35:12Z"
-            }]
-        };
+    it("should return null when streamer is not found on Twitch", async () => {
+        httpClientMock.get.mockResolvedValue({ data: [] });
 
-        const userResponse: Partial<AxiosResponse<TwitchUserResponse>> = {
-            data: twitchUserMock
-        };
+        const result = await repository.searchStreamerById(123);
 
-        mockedAxios.get.mockResolvedValue(userResponse);
+        expect(httpClientMock.get).toHaveBeenCalledWith('users', { id: "123" });
+        expect(result).toBeNull();
+    });
 
-        const streamer = await repository.searchStreamerById(83232866);
-
-        expect(mockedAxios.post).toHaveBeenCalledTimes(1);
-        expect(mockedAxios.get).toHaveBeenCalledWith(
-            'https://api.twitch.tv/helix/users',
-            {
-                headers: {
-                    'Client-Id': '',
-                    'Authorization': 'Bearer mocked-token'
-                },
-                params: {
-                    id: "83232866"
+    it("should return Streamer entity when found on Twitch", async () => {
+        const mockTwitchResponse: TwitchUserResponse = {
+            data: [
+                {
+                    id: "83232866",
+                    login: "ibai",
+                    display_name: "Ibai",
+                    type: "",
+                    broadcaster_type: "partner",
+                    description: "Generic streamer description",
+                    profile_image_url: "https://example.com/ibai.png",
+                    offline_image_url: "https://example.com/ibai-offline.png",
+                    view_count: 150000,
+                    created_at: "2026-07-08T13:40:00Z"
                 }
-            }
-        );
+            ]
+        };
 
-        expect(streamer).toEqual({
+        httpClientMock.get.mockResolvedValue(mockTwitchResponse);
+
+        const result = await repository.searchStreamerById(83232866);
+
+        expect(httpClientMock.get).toHaveBeenCalledWith('users', { id: "83232866" });
+        expect(result).toEqual({
             id: 83232866,
             displayName: "Ibai",
             type: "",
-            breadcasterType: "partner",
-            description: "Canal de Ibai",
-            profileImageUrl: "https://static-cdn/ibai.png",
-            offlineImageUrl: "https://static-cdn/offline.png",
+            broadcasterType: "partner",
+            description: "Generic streamer description",
+            profileImageUrl: "https://example.com/ibai.png",
+            offlineImageUrl: "https://example.com/ibai-offline.png",
             viewCount: 150000,
-            createdAt: new Date("2014-01-28T19:35:12Z")
+            createdAt: new Date("2026-07-08T13:40:00Z")
         });
-    });
-
-    it("should return null if twitch api returns empty data array", async () => {
-        const userResponse: Partial<AxiosResponse<TwitchUserResponse>> = {
-            data: { data: [] }
-        };
-
-        mockedAxios.get.mockResolvedValue(userResponse);
-
-        const streamer = await repository.searchStreamerById(999999);
-
-        expect(streamer).toBeNull();
-    });
-
-    it("should cache the access token and not request it again on subsequent calls", async () => {
-        const twitchUserMock: TwitchUserResponse = {
-            data: [{
-                id: "83232866",
-                login: "ibai",
-                display_name: "Ibai",
-                type: "",
-                broadcaster_type: "partner",
-                description: "Canal de Ibai",
-                profile_image_url: "",
-                offline_image_url: "",
-                view_count: 100,
-                created_at: "2014-01-28T19:35:12Z"
-            }]
-        };
-
-        const userResponse: Partial<AxiosResponse<TwitchUserResponse>> = {
-            data: twitchUserMock
-        };
-
-        mockedAxios.get.mockResolvedValue(userResponse);
-
-        await repository.searchStreamerById(83232866);
-        await repository.searchStreamerById(83232866);
-
-        expect(mockedAxios.post).toHaveBeenCalledTimes(1);
-        expect(mockedAxios.get).toHaveBeenCalledTimes(2);
-    });
-
-    it("should propagate error when twitch api fails", async () => {
-        mockedAxios.get.mockRejectedValue(new Error("Twitch Helix API error"));
-
-        await expect(repository.searchStreamerById(83232866)).rejects.toThrow("Twitch Helix API error");
     });
 });

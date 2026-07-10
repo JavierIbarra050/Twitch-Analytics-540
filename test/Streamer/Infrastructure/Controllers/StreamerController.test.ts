@@ -45,7 +45,7 @@ describe("StreamerController", () => {
             login: "ibai",
             display_name: "Ibai",
             type: expectedStreamer.type,
-            broadcaster_type: expectedStreamer.breadcasterType,
+            broadcaster_type: expectedStreamer.broadcasterType,
             description: expectedStreamer.description,
             profile_image_url: expectedStreamer.profileImageUrl,
             offline_image_url: expectedStreamer.offlineImageUrl,
