@@ -2,32 +2,62 @@ import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import path from 'path';
 
-let dbInstance: Database | null = null;
+export class DatabaseConnection {
+  private static instance: DatabaseConnection | null = null;
+  private db: Database | null = null;
 
-export async function getDatabase(): Promise<Database> {
-  if (dbInstance) {
-    return dbInstance;
+  private constructor() {}
+
+  public static getInstance(): DatabaseConnection {
+    if (!DatabaseConnection.instance) {
+      DatabaseConnection.instance = new DatabaseConnection();
+    }
+    return DatabaseConnection.instance;
   }
 
-  const dbPath = path.resolve(__dirname, '../../../../database.sqlite');
+  public async getConnection(): Promise<Database> {
+    if (this.db) {
+      try {
+        // Simple ping check to see if the connection is still alive/valid
+        await this.db.get('SELECT 1');
+        return this.db;
+      } catch (error) {
+        console.warn('Database connection check failed, attempting to reconnect...', error);
+        await this.close();
+      }
+    }
 
-  sqlite3.verbose();
+    const dbPath = path.resolve(__dirname, '../../../../database.sqlite');
+    sqlite3.verbose();
 
-  dbInstance = await open({
-    filename: dbPath,
-    driver: sqlite3.Database
-  });
+    this.db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database
+    });
 
-  await dbInstance.run('PRAGMA foreign_keys = ON');
+    await this.db.run('PRAGMA foreign_keys = ON');
+    return this.db;
+  }
 
-  return dbInstance;
+  public async close(): Promise<void> {
+    if (this.db) {
+      try {
+        await this.db.close();
+      } catch (error) {
+        console.error('Error closing database connection:', error);
+      } finally {
+        this.db = null;
+      }
+    }
+  }
+}
+
+export async function getDatabase(): Promise<Database> {
+  return DatabaseConnection.getInstance().getConnection();
 }
 
 export async function closeDatabase(): Promise<void> {
-  if (dbInstance) {
-    await dbInstance.close();
-    dbInstance = null;
-  }
+  return DatabaseConnection.getInstance().close();
 }
 
 export async function initializeDatabase(): Promise<void> {
