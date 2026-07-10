@@ -10,7 +10,7 @@ export class AuthMiddleware {
         try {
             const authHeader = req.headers.authorization;
 
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
                 res.status(401).json({ error: 'Unauthorized. Token is invalid or expired.' });
                 return;
             }

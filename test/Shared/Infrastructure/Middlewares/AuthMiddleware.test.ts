@@ -52,6 +52,16 @@ describe("AuthMiddleware", () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it("should return 401 if authorization header is an array (duplicate headers)", async () => {
+        req.headers = { authorization: ["Bearer token1", "Bearer token2"] as any };
+
+        await middleware.execute(req as Request, res as Response, next);
+
+        expect(statusMock).toHaveBeenCalledWith(401);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Unauthorized. Token is invalid or expired." });
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it("should return 401 if token is not found or expired in database", async () => {
         req.headers = { authorization: "Bearer invalidtoken" };
         userRepositoryMock.verifyToken.mockResolvedValue(false);
