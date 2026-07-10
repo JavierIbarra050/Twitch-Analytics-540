@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../../Application/Services/UserService';
+import { Email } from '../../Domain/ValueObjects/Email';
 
 export class UserController {
     constructor(
@@ -8,20 +9,15 @@ export class UserController {
 
     public register = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { email } = req.body;
-
-            if (!email) {
-                res.status(400).json({ error: 'The email is mandatory' });
+            let emailVo: Email;
+            try {
+                emailVo = new Email(req.body.email);
+            } catch (error: any) {
+                res.status(400).json({ error: error.message });
                 return;
             }
 
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                res.status(400).json({ error: 'The email must be a valid email address' });
-                return;
-            }
-
-            const user = await this.userService.registerNewUser(email);
+            const user = await this.userService.registerNewUser(emailVo.toString());
 
             res.status(200).json({ api_key: user.getUserApiKey() });
         } catch {
