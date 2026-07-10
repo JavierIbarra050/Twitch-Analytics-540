@@ -4,10 +4,22 @@ import { TwitchTokenResponse } from './TwitchTokenResponse';
 const TOKEN_EXPIRATION_BUFFER_MS = 60 * 1000; // Refresh token 60s before actual expiry
 
 export class TwitchHttpClient {
-    private readonly clientId = process.env.TWITCH_CLIENT_ID || '';
-    private readonly clientSecret = process.env.TWITCH_CLIENT_SECRET || '';
+    private readonly clientId: string;
+    private readonly clientSecret: string;
     private accessToken: string | null = null;
     private expiresAt: number = 0;
+
+    constructor() {
+        this.clientId = process.env.TWITCH_CLIENT_ID || '';
+        this.clientSecret = process.env.TWITCH_CLIENT_SECRET || '';
+
+        if (!this.clientId) {
+            throw new Error('TWITCH_CLIENT_ID environment variable is missing');
+        }
+        if (!this.clientSecret) {
+            throw new Error('TWITCH_CLIENT_SECRET environment variable is missing');
+        }
+    }
 
     private async getAppAccessToken(): Promise<string> {
         const isTokenValid = this.accessToken && Date.now() < this.expiresAt - TOKEN_EXPIRATION_BUFFER_MS;
