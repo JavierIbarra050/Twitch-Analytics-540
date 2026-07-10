@@ -54,8 +54,26 @@ describe("StreamerController", () => {
         });
     });
 
-    it("should return 400 status when 'id' query parameter is invalid", async () => {
+    it("should return 400 status when 'id' query parameter is invalid symbol", async () => {
         reqMock.query = { id: Symbol("invalid") as any };
+
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+
+        expect(resMock.status).toHaveBeenCalledWith(400);
+        expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'id' parameter." });
+    });
+
+    it("should return 400 status when 'id' contains decimal parts", async () => {
+        reqMock.query = { id: "12.34" };
+
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+
+        expect(resMock.status).toHaveBeenCalledWith(400);
+        expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'id' parameter." });
+    });
+
+    it("should return 400 status when 'id' contains trailing non-numeric characters", async () => {
+        reqMock.query = { id: "12abc" };
 
         await streamerController.getStreamerById(reqMock as Request, resMock as Response);
 

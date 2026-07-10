@@ -10,12 +10,11 @@ export class TopOfTheTopsController {
             let since: number | undefined;
 
             if (sinceQuery !== undefined) {
-                const parsed = Number(sinceQuery);
-                if (isNaN(parsed)) {
+                if (typeof sinceQuery !== 'string' || !/^\d+$/.test(sinceQuery)) {
                     res.status(400).json({ error: "Bad Request. Invalid or missing parameters." });
                     return;
                 }
-                since = parsed;
+                since = parseInt(sinceQuery, 10);
             }
 
             const stats = await this.service.getTopOfTheTops(since);

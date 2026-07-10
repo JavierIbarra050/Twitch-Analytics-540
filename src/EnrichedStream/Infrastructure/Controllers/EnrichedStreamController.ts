@@ -10,14 +10,14 @@ export class EnrichedStreamController {
         try {
             const limitParam = req.query.limit;
 
-            if (!limitParam) {
+            if (typeof limitParam !== 'string' || !/^\d+$/.test(limitParam)) {
                 res.status(400).json({ error: "Invalid 'limit' parameter." });
                 return;
             }
 
-            const limit = parseInt(String(limitParam), 10);
+            const limit = parseInt(limitParam, 10);
 
-            if (isNaN(limit) || limit <= 0) {
+            if (limit <= 0) {
                 res.status(400).json({ error: "Invalid 'limit' parameter." });
                 return;
             }
