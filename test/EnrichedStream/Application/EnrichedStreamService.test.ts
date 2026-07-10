@@ -38,7 +38,6 @@ describe("EnrichedStreamService", () => {
 
         expect(result.length).toBe(2);
 
-        // Debería estar ordenado por viewerCount desc: [user2 (500), user3 (300)]
         expect(result[0].getStreamId()).toBe("2");
         expect(result[0].getUserId()).toBe("user2");
         expect(result[0].getUserDisplayName()).toBe("User Two Enriched");
@@ -47,7 +46,7 @@ describe("EnrichedStreamService", () => {
 
         expect(result[1].getStreamId()).toBe("3");
         expect(result[1].getUserId()).toBe("user3");
-        expect(result[1].getUserDisplayName()).toBe("User Three"); // No tiene perfil enriquecido devuelto, usa el de la API de streams
+        expect(result[1].getUserDisplayName()).toBe("User Three"); 
         expect(result[1].getProfileImageUrl()).toBe("");
         expect(result[1].getViewerCount()).toBe(300);
     });
