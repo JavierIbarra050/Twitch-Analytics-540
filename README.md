@@ -42,6 +42,30 @@ npm run build
 npm start
 ```
 
+### Ejecución con Docker
+Para compilar y ejecutar la aplicación dentro de contenedores de Docker utilizando Docker Compose:
+
+1. **Configurar Variables de Entorno:** Asegúrate de tener el archivo `.env` configurado en la raíz del proyecto con tus credenciales de Twitch.
+2. **Levantar los contenedores:** Compila la imagen e inicia la aplicación en segundo plano (modo *detached*):
+   ```bash
+   docker compose up --build -d
+   ```
+3. **Verificar el estado:** Comprueba que el contenedor esté corriendo correctamente:
+   ```bash
+   docker compose ps
+   ```
+4. **Ver los logs:** Puedes monitorizar la salida de la consola en tiempo real ejecutando:
+   ```bash
+   docker compose logs -f
+   ```
+5. **Acceso a la API:** El servidor estará escuchando en `http://localhost:3000` (o el puerto que hayas configurado bajo la variable `PORT` en tu `.env`).
+6. **Persistencia de Datos:** Los datos de la base de datos SQLite se guardarán de forma persistente en el directorio local `./data` de tu máquina.
+
+Para detener y remover los contenedores:
+```bash
+docker compose down
+```
+
 ### Ejecutar Pruebas (Tests)
 Para ejecutar la suite completa de pruebas unitarias e integración con Jest:
 ```bash
