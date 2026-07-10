@@ -157,7 +157,7 @@ describe('UserRepositorySQL', () => {
             const result = await repository.verifyToken(token);
 
             expect(mockDb.get).toHaveBeenCalledWith(
-                "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+                "SELECT id FROM user_tokens WHERE token = ? AND datetime(expires_at) > datetime('now')",
                 [token]
             );
             expect(result).toBe(true);
@@ -170,7 +170,7 @@ describe('UserRepositorySQL', () => {
             const result = await repository.verifyToken(token);
 
             expect(mockDb.get).toHaveBeenCalledWith(
-                "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+                "SELECT id FROM user_tokens WHERE token = ? AND datetime(expires_at) > datetime('now')",
                 [token]
             );
             expect(result).toBe(false);
