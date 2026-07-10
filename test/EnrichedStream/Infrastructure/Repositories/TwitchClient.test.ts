@@ -1,3 +1,6 @@
+process.env.TWITCH_CLIENT_ID = 'test-client-id';
+process.env.TWITCH_CLIENT_SECRET = 'test-client-secret';
+
 import axios, { AxiosResponse } from 'axios';
 import { TwitchClient } from "EnrichedStream/Infrastructure/Repositories/TwitchClient";
 import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
@@ -63,7 +66,7 @@ describe("TwitchClient", () => {
                 'https://api.twitch.tv/helix/streams',
                 {
                     headers: {
-                        'Client-Id': '',
+                        'Client-Id': 'test-client-id',
                         'Authorization': 'Bearer mocked-token'
                     },
                     params: { first: "1" }
@@ -117,7 +120,7 @@ describe("TwitchClient", () => {
                 'https://api.twitch.tv/helix/users',
                 {
                     headers: {
-                        'Client-Id': '',
+                        'Client-Id': 'test-client-id',
                         'Authorization': 'Bearer mocked-token'
                     },
                     params: expectedParams

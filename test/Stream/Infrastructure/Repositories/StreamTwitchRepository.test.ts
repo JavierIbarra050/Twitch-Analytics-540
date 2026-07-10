@@ -1,3 +1,6 @@
+process.env.TWITCH_CLIENT_ID = 'test-client-id';
+process.env.TWITCH_CLIENT_SECRET = 'test-client-secret';
+
 import axios, { AxiosResponse } from 'axios';
 import { StreamTwitchRepository } from "Stream/Infrastructure/Repositories/StreamTwitchRepository";
 import { TwitchStreamResponse } from "Stream/Infrastructure/TwitchResponses/TwitchStreamResponse";
@@ -65,7 +68,7 @@ describe("StreamTwitchRepository", () => {
                 'https://api.twitch.tv/helix/streams',
                 {
                     headers: {
-                        'Client-Id': '',
+                        'Client-Id': 'test-client-id',
                         'Authorization': 'Bearer mocked-token'
                     },
                     params: new URLSearchParams()
