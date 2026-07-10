@@ -9,15 +9,8 @@ export class UserService {
     ) {}
 
     async registerNewUser(email: string): Promise<User> {
-
         const newApiKey = this.generateApiKey();
-
-        if (await this.userRepository.doesUserAlreadyExists(email)) {
-            return await this.userRepository.saveUser(email, newApiKey);
-        }
-
-        const newUser = await this.userRepository.saveUser(email, newApiKey);
-        return newUser;
+        return await this.userRepository.saveUser(email, newApiKey);
     }
 
     generateApiKey(): string {
