@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { getDatabase } from '../Database/database';
+import { IUserRepository } from '../../../User/Domain/Repositories/IUserRepository';
 
 export class AuthMiddleware {
+    constructor(
+        private readonly userRepository: IUserRepository,
+    ) {}
 
     execute = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
@@ -14,14 +17,9 @@ export class AuthMiddleware {
 
             const token = authHeader.split(' ')[1];
 
-            const db = await getDatabase();
+            const tokenValid = await this.userRepository.verifyToken(token);
 
-            const tokenRecord = await db.get(
-                "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
-                [token]
-            );
-
-            if (!tokenRecord) {
+            if (!tokenValid) {
                 res.status(401).json({ error: 'Unauthorized. Token is invalid or expired.' });
                 return;
             }

@@ -44,4 +44,13 @@ export class UserRepositorySQL implements IUserRepository {
             [user.id, token, expiresAt.toISOString()]
         );
     }
+
+    async verifyToken(token: string): Promise<boolean> {
+        const db = await getDatabase();
+        const tokenRecord = await db.get<{ id: number }>(
+            "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+            [token]
+        );
+        return !!tokenRecord;
+    }
 }

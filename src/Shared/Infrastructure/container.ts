@@ -24,9 +24,16 @@ import { UserController } from '../../User/Infrastructure/Controllers/UserContro
 import { UserTokenService } from '../../User/Application/Services/UserTokenService';
 import { UserTokenController } from '../../User/Infrastructure/Controllers/UserTokenController';
 
+// User (instantiated first because AuthMiddleware depends on it)
+export const userRepository = new UserRepositorySQL();
+export const userService = new UserService(userRepository);
+export const userController = new UserController(userService);
+export const userTokenService = new UserTokenService(userRepository);
+export const userTokenController = new UserTokenController(userTokenService);
+
 // Shared
 export const twitchHttpClient = new TwitchHttpClient();
-export const authMiddleware = new AuthMiddleware();
+export const authMiddleware = new AuthMiddleware(userRepository);
 
 // Streamer
 export const streamerRepository = new StreamerTwitchRepository(twitchHttpClient);
@@ -48,10 +55,3 @@ export const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpC
 export const gameCacheRepository = new SQLiteGameCacheRepository();
 export const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);
 export const topOfTheTopsController = new TopOfTheTopsController(topOfTheTopsService);
-
-// User
-export const userRepository = new UserRepositorySQL();
-export const userService = new UserService(userRepository);
-export const userController = new UserController(userService);
-export const userTokenService = new UserTokenService(userRepository);
-export const userTokenController = new UserTokenController(userTokenService);
