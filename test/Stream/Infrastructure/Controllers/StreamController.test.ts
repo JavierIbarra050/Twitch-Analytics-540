@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { StreamController } from "Stream/Infrastructure/Controller/StreamController";
+import { StreamController } from "Stream/Infrastructure/Controllers/StreamController";
 import { StreamService } from "Stream/Application/Services/StreamService";
 import { StreamMother } from "../../Mothers/StreamMother";
 

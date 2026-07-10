@@ -7,17 +7,17 @@ import { StreamerController } from '../Controllers/StreamerController';
 
 import { StreamTwitchRepository } from '../../../Stream/Infrastructure/Repositories/StreamTwitchRepository';
 import { StreamService } from '../../../Stream/Application/Services/StreamService';
-import { StreamController } from '../../../Stream/Infrastructure/Controller/StreamController';
+import { StreamController } from '../../../Stream/Infrastructure/Controllers/StreamController';
 
 import { TwitchClient } from '../../../EnrichedStream/Infrastructure/Repositories/TwitchClient';
 import { EnrichedStreamService } from '../../../EnrichedStream/Application/Services/EnrichedStreamService';
-import { EnrichedStreamController } from '../../../EnrichedStream/Infrastructure/Controller/EnrichedStreamController';
+import { EnrichedStreamController } from '../../../EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
 import { AuthMiddleware } from '../../../Shared/Infrastructure/Middlewares/AuthMiddleware';
 
 import { SQLiteGameCacheRepository } from '../../../TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';
 import { TwitchClient as TopOfTheTopsTwitchClient } from '../../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
 import { TopOfTheTopsService } from '../../../TopOfTheTops/Application/Services/TopOfTheTopsService';
-import { TopOfTheTopsController } from '../../../TopOfTheTops/Infrastructure/Controller/TopOfTheTopsController';
+import { TopOfTheTopsController } from '../../../TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
 
 const router = Router();
 
@@ -47,6 +47,3 @@ router.get('/streams/enriched', authMiddleware.execute.bind(authMiddleware), enr
 router.get('/topsofthetops', authMiddleware.execute.bind(authMiddleware), topOfTheTopsController.getTopOfTheTops.bind(topOfTheTopsController));
 
 export default router;
-
-
-

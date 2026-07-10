@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { TopOfTheTopsController } from '../../../../src/TopOfTheTops/Infrastructure/Controller/TopOfTheTopsController';
+import { TopOfTheTopsController } from '../../../../src/TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
 import { TopOfTheTopsService } from '../../../../src/TopOfTheTops/Application/Services/TopOfTheTopsService';
 import { TopOfTheTops } from '../../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
 

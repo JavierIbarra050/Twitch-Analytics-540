@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { EnrichedStreamController } from '../../../../src/EnrichedStream/Infrastructure/Controller/EnrichedStreamController';
+import { EnrichedStreamController } from '../../../../src/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
 import { EnrichedStreamService } from '../../../../src/EnrichedStream/Application/Services/EnrichedStreamService';
 import { EnrichedStreamMother } from '../../Mothers/EnrichedStreamMother';
 
