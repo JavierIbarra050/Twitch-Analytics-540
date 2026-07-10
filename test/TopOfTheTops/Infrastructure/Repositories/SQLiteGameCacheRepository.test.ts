@@ -51,7 +51,7 @@ describe('SQLiteGameCacheRepository', () => {
         expect(result![0].getMostViewedViews()).toBe(50000);
     });
 
-    it('should delete previous cache and insert new stats', async () => {
+    it('should delete previous cache and insert new stats inside a transaction', async () => {
         const stat = new TopOfTheTops(
             '509658', 'Just Chatting', 'LCK', 4, 1000000,
             'Title', 50000, '1h', '2026-07-09T00:00:00Z'
@@ -59,11 +59,33 @@ describe('SQLiteGameCacheRepository', () => {
 
         await repository.saveCachedStats([stat]);
 
-        expect(dbMock.run).toHaveBeenNthCalledWith(1, "DELETE FROM game_cache");
-        expect(dbMock.run).toHaveBeenNthCalledWith(2, expect.stringContaining("INSERT INTO game_cache"), [
+        expect(dbMock.run).toHaveBeenNthCalledWith(1, "BEGIN TRANSACTION");
+        expect(dbMock.run).toHaveBeenNthCalledWith(2, "DELETE FROM game_cache");
+        expect(dbMock.run).toHaveBeenNthCalledWith(3, expect.stringContaining("INSERT INTO game_cache"), [
             '509658', 'Just Chatting', 'LCK', 4, 1000000,
             'Title', 50000, '1h', '2026-07-09T00:00:00Z'
         ]);
+        expect(dbMock.run).toHaveBeenNthCalledWith(4, "COMMIT");
+    });
+
+    it('should rollback transaction and rethrow error when database operations fail', async () => {
+        const stat = new TopOfTheTops(
+            '509658', 'Just Chatting', 'LCK', 4, 1000000,
+            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
+        );
+
+        dbMock.run.mockImplementation(async (sql: string) => {
+            if (sql.includes("INSERT INTO game_cache")) {
+                throw new Error("Disk Full");
+            }
+        });
+
+        await expect(repository.saveCachedStats([stat])).rejects.toThrow("Disk Full");
+
+        expect(dbMock.run).toHaveBeenNthCalledWith(1, "BEGIN TRANSACTION");
+        expect(dbMock.run).toHaveBeenNthCalledWith(2, "DELETE FROM game_cache");
+        expect(dbMock.run).toHaveBeenNthCalledWith(4, "ROLLBACK");
+        expect(dbMock.run).not.toHaveBeenCalledWith("COMMIT");
     });
 
     it('should return null if there is no cache update record', async () => {

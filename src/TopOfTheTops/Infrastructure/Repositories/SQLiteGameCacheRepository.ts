@@ -24,26 +24,33 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
 
     async saveCachedStats(stats: TopOfTheTops[]): Promise<void> {
         const db = await getDatabase();
-        await db.run("DELETE FROM game_cache");
-        
-        for (const stat of stats) {
-            await db.run(
-                `INSERT INTO game_cache (
-                    game_id, game_name, user_name, total_videos, total_views,
-                    most_viewed_title, most_viewed_views, most_viewed_duration, most_viewed_created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-                [
-                    stat.getGameId(),
-                    stat.getGameName(),
-                    stat.getUserName(),
-                    stat.getTotalVideos(),
-                    stat.getTotalViews(),
-                    stat.getMostViewedTitle(),
-                    stat.getMostViewedViews(),
-                    stat.getMostViewedDuration(),
-                    stat.getMostViewedCreatedAt()
-                ]
-            );
+        await db.run("BEGIN TRANSACTION");
+        try {
+            await db.run("DELETE FROM game_cache");
+            
+            for (const stat of stats) {
+                await db.run(
+                    `INSERT INTO game_cache (
+                        game_id, game_name, user_name, total_videos, total_views,
+                        most_viewed_title, most_viewed_views, most_viewed_duration, most_viewed_created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                    [
+                        stat.getGameId(),
+                        stat.getGameName(),
+                        stat.getUserName(),
+                        stat.getTotalVideos(),
+                        stat.getTotalViews(),
+                        stat.getMostViewedTitle(),
+                        stat.getMostViewedViews(),
+                        stat.getMostViewedDuration(),
+                        stat.getMostViewedCreatedAt()
+                    ]
+                );
+            }
+            await db.run("COMMIT");
+        } catch (error) {
+            await db.run("ROLLBACK");
+            throw error;
         }
     }
 
