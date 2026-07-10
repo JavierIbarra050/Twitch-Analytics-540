@@ -1,14 +1,12 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import cors from 'cors';
 import analyticsRoutes from "./Streamer/Infrastructure/Routes/analyticsRoutes";
 import userRoutes from "./User/Infrastructure/Routes/userRoutes";
 import { initializeDatabase } from './Shared/Infrastructure/Database/database';
+import { config } from './Shared/Infrastructure/Config/config';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 
 app.use(cors());
 app.use(express.json());

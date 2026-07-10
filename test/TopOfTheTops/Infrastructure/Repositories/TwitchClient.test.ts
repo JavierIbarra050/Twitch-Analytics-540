@@ -8,7 +8,11 @@ describe('TwitchClient in TopOfTheTops module', () => {
     let httpClientMock: jest.Mocked<TwitchHttpClient>;
 
     beforeEach(() => {
-        httpClientMock = new TwitchHttpClient() as jest.Mocked<TwitchHttpClient>;
+        httpClientMock = new TwitchHttpClient({
+            port: 3000,
+            twitchClientId: 'test-client-id',
+            twitchClientSecret: 'test-client-secret'
+        } as any) as jest.Mocked<TwitchHttpClient>;
         client = new TwitchClient(httpClientMock);
     });
 
