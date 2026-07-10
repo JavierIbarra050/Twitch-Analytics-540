@@ -12,43 +12,26 @@ describe("UserService", () => {
             saveUser: jest.fn(),
             findByEmail: jest.fn(),
             saveToken: jest.fn(),
+            verifyToken: jest.fn()
         } as unknown as jest.Mocked<IUserRepository>;
 
         userService = new UserService(userRepositoryMock);
     });
 
-    it("should generate an api_key and save a new user when email does not exist", async () => {
-        const email = "newuser@example.com";
+    it("should generate an api_key and save the user via repository", async () => {
+        const email = "user@example.com";
         const savedUser = UserMother.create({ email });
 
-        userRepositoryMock.doesUserAlreadyExists.mockResolvedValue(false);
         userRepositoryMock.saveUser.mockResolvedValue(savedUser);
 
         const result = await userService.registerNewUser(email);
 
-        expect(userRepositoryMock.doesUserAlreadyExists).toHaveBeenCalledWith(email);
+        expect(userRepositoryMock.doesUserAlreadyExists).not.toHaveBeenCalled();
         expect(userRepositoryMock.saveUser).toHaveBeenCalledWith(email, expect.any(String));
         
         const passedApiKey = userRepositoryMock.saveUser.mock.calls[0][1];
         expect(passedApiKey.length).toBe(32);
         expect(result).toBe(savedUser);
-    });
-
-    it("should regenerate api_key and update when email already exists", async () => {
-        const email = "existing@example.com";
-        const updatedUser = UserMother.create({ email });
-
-        userRepositoryMock.doesUserAlreadyExists.mockResolvedValue(true);
-        userRepositoryMock.saveUser.mockResolvedValue(updatedUser);
-
-        const result = await userService.registerNewUser(email);
-
-        expect(userRepositoryMock.doesUserAlreadyExists).toHaveBeenCalledWith(email);
-        expect(userRepositoryMock.saveUser).toHaveBeenCalledWith(email, expect.any(String));
-        
-        const passedApiKey = userRepositoryMock.saveUser.mock.calls[0][1];
-        expect(passedApiKey.length).toBe(32);
-        expect(result).toBe(updatedUser);
     });
 
     it("generateApiKey should return a 32-char hex string", () => {
