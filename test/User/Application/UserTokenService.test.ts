@@ -14,7 +14,7 @@ describe("UserTokenService", () => {
             saveToken: jest.fn(),
         } as unknown as jest.Mocked<IUserRepository>;
 
-        userTokenService = new UserTokenService(userRepositoryMock);
+        userTokenService = new UserTokenService(userRepositoryMock, 3);
     });
 
     it("should return a token when email and api_key are valid", async () => {
@@ -34,7 +34,7 @@ describe("UserTokenService", () => {
             expect.any(Date)
         );
         expect(token).toBeDefined();
-        expect(token.length).toBe(64); // 32 bytes in hex = 64 chars
+        expect(token.length).toBe(64);
     });
 
     it("should throw Unauthorized when user does not exist", async () => {
