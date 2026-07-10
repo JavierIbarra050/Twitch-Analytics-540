@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: twitch_analytics_app
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./data:/usr/src/app/data
+    env_file:
+      - .env
+    restart: always

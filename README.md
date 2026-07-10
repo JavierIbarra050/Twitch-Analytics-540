@@ -42,6 +42,22 @@ npm run build
 npm start
 ```
 
+### Ejecución con Docker
+Para compilar y ejecutar la aplicación dentro de contenedores de Docker utilizando Docker Compose:
+
+1. Asegúrate de tener el archivo `.env` configurado con tus credenciales de Twitch.
+2. Inicia los contenedores con:
+   ```bash
+   docker compose up --build -d
+   ```
+3. El servidor estará escuchando en `http://localhost:3000` (o el puerto que hayas configurado en tu `.env`).
+4. Los datos de la base de datos se guardarán de forma persistente en el directorio local `./data`.
+
+Para detener los contenedores:
+```bash
+docker compose down
+```
+
 ### Ejecutar Pruebas (Tests)
 Para ejecutar la suite completa de pruebas unitarias e integración con Jest:
 ```bash
