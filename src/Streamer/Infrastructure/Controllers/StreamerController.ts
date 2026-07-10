@@ -30,7 +30,7 @@ export class StreamerController {
                 login: streamer.displayName.toLowerCase().replace(/\s+/g, ''),
                 display_name: streamer.displayName,
                 type: streamer.type,
-                broadcaster_type: streamer.breadcasterType,
+                broadcaster_type: streamer.broadcasterType,
                 description: streamer.description,
                 profile_image_url: streamer.profileImageUrl,
                 offline_image_url: streamer.offlineImageUrl,
