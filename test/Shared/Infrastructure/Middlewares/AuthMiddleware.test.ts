@@ -58,7 +58,7 @@ describe("AuthMiddleware", () => {
         await middleware.execute(req as Request, res as Response, next);
 
         expect(dbMock.get).toHaveBeenCalledWith(
-            "SELECT * FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+            "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
             ["invalidtoken"]
         );
         expect(statusMock).toHaveBeenCalledWith(401);
