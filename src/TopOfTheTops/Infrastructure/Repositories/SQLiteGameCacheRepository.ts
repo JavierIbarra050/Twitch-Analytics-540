@@ -13,10 +13,10 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
             row.game_id,
             row.game_name,
             row.user_name,
-            row.total_videos,
-            row.total_views,
+            Number(row.total_videos),
+            Number(row.total_views),
             row.most_viewed_title,
-            row.most_viewed_views,
+            Number(row.most_viewed_views),
             row.most_viewed_duration,
             row.most_viewed_created_at
         ));

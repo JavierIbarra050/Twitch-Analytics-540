@@ -47,10 +47,10 @@ export class TopOfTheTopsService {
                 game.id,
                 game.name,
                 mostViewedVideo.user_name,
-                totalVideosCount.toString(),
-                totalViewsSum.toString(),
+                totalVideosCount,
+                totalViewsSum,
                 mostViewedVideo.title,
-                mostViewedVideo.view_count.toString(),
+                mostViewedVideo.view_count,
                 mostViewedVideo.duration,
                 mostViewedVideo.created_at
             ));

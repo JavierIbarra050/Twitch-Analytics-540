@@ -40,7 +40,7 @@ describe('TopOfTheTopsController', () => {
 
     it('should return 200 OK with mapped statistics', async () => {
         const stats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', '2', '200', 'Title 1', '100', '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
         ];
         serviceMock.getTopOfTheTops.mockResolvedValue(stats);
         req.query = { since: '600' };

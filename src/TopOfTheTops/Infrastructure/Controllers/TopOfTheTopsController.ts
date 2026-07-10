@@ -28,10 +28,10 @@ export class TopOfTheTopsController {
                 game_id: stat.getGameId(),
                 game_name: stat.getGameName(),
                 user_name: stat.getUserName(),
-                total_videos: stat.getTotalVideos(),
-                total_views: stat.getTotalViews(),
+                total_videos: stat.getTotalVideos().toString(),
+                total_views: stat.getTotalViews().toString(),
                 most_viewed_title: stat.getMostViewedTitle(),
-                most_viewed_views: stat.getMostViewedViews(),
+                most_viewed_views: stat.getMostViewedViews().toString(),
                 most_viewed_duration: stat.getMostViewedDuration(),
                 most_viewed_created_at: stat.getMostViewedCreatedAt()
             }));

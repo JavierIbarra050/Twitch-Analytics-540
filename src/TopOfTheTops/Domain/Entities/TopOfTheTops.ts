@@ -3,10 +3,10 @@ export class TopOfTheTops {
         private readonly gameId: string,
         private readonly gameName: string,
         private readonly userName: string,
-        private readonly totalVideos: string,
-        private readonly totalViews: string,
+        private readonly totalVideos: number,
+        private readonly totalViews: number,
         private readonly mostViewedTitle: string,
-        private readonly mostViewedViews: string,
+        private readonly mostViewedViews: number,
         private readonly mostViewedDuration: string,
         private readonly mostViewedCreatedAt: string,
     ) {}
@@ -23,11 +23,11 @@ export class TopOfTheTops {
         return this.userName;
     }
 
-    getTotalVideos(): string {
+    getTotalVideos(): number {
         return this.totalVideos;
     }
 
-    getTotalViews(): string {
+    getTotalViews(): number {
         return this.totalViews;
     }
 
@@ -35,7 +35,7 @@ export class TopOfTheTops {
         return this.mostViewedTitle;
     }
 
-    getMostViewedViews(): string {
+    getMostViewedViews(): number {
         return this.mostViewedViews;
     }
 
