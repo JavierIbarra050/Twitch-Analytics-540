@@ -55,9 +55,9 @@ describe('TopOfTheTopsService', () => {
             { id: '1', name: 'Game 1' }
         ]);
         twitchClientMock.getTopVideosByGame.mockResolvedValue([
-            { user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' },
-            { user_name: 'User 1', title: 'Title 2', view_count: 50, duration: '5m', created_at: '2026-07-09T01:00:00Z' },
-            { user_name: 'User 2', title: 'Title 3', view_count: 30, duration: '8m', created_at: '2026-07-09T02:00:00Z' }
+            { id: 'v1', user_id: 'u1', user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' },
+            { id: 'v2', user_id: 'u1', user_name: 'User 1', title: 'Title 2', view_count: 50, duration: '5m', created_at: '2026-07-09T01:00:00Z' },
+            { id: 'v3', user_id: 'u2', user_name: 'User 2', title: 'Title 3', view_count: 30, duration: '8m', created_at: '2026-07-09T02:00:00Z' }
         ]);
 
         const result = await service.getTopOfTheTops();
@@ -75,7 +75,7 @@ describe('TopOfTheTopsService', () => {
             { id: '1', name: 'Game 1' }
         ]);
         twitchClientMock.getTopVideosByGame.mockResolvedValue([
-            { user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
+            { id: 'v1', user_id: 'u1', user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
         ]);
 
         const result = await service.getTopOfTheTops(300);
@@ -90,7 +90,7 @@ describe('TopOfTheTopsService', () => {
             { id: '1', name: 'Game 1' }
         ]);
         twitchClientMock.getTopVideosByGame.mockResolvedValue([
-            { user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
+            { id: 'v1', user_id: 'u1', user_name: 'User 1', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
         ]);
 
         const result = await service.getTopOfTheTops();
