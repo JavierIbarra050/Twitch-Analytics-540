@@ -55,7 +55,6 @@ describe("StreamerController", () => {
     });
 
     it("should return 400 status when 'id' query parameter is invalid", async () => {
-        // En convertIdToNumber, parseInt(Symbol("invalid")) lanzará un error y devolverá false
         reqMock.query = { id: Symbol("invalid") as any };
 
         await streamerController.getStreamerById(reqMock as Request, resMock as Response);
