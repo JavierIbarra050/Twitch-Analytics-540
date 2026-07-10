@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserTokenService } from '../../Application/Services/UserTokenService';
+import { Email } from '../../Domain/ValueObjects/Email';
 
 export class UserTokenController {
     constructor(
@@ -8,16 +9,13 @@ export class UserTokenController {
 
     public generateToken = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { email, api_key } = req.body;
+            const { api_key } = req.body;
 
-            if (!email) {
-                res.status(400).json({ error: 'The email is mandatory' });
-                return;
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                res.status(400).json({ error: 'The email must be a valid email address' });
+            let emailVo: Email;
+            try {
+                emailVo = new Email(req.body.email);
+            } catch (error: any) {
+                res.status(400).json({ error: error.message });
                 return;
             }
 
@@ -26,7 +24,7 @@ export class UserTokenController {
                 return;
             }
 
-            const token = await this.userTokenService.generateToken(email, api_key);
+            const token = await this.userTokenService.generateToken(emailVo.toString(), api_key);
 
             res.status(200).json({ token });
         } catch (error: any) {
