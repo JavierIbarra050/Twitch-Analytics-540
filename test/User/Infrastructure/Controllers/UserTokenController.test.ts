@@ -36,6 +36,17 @@ describe('UserTokenController', () => {
             expect(userTokenServiceMock.generateToken).not.toHaveBeenCalled();
         });
 
+        it('should return 400 when body is undefined', async () => {
+            const req = { body: undefined } as unknown as Request;
+            const res = mockResponse();
+
+            await userTokenController.generateToken(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ error: 'The email is mandatory' });
+            expect(userTokenServiceMock.generateToken).not.toHaveBeenCalled();
+        });
+
         it('should return 400 when email format is invalid', async () => {
             const req = mockRequest({ email: 'not-a-valid-email', api_key: 'someapikey123' });
             const res = mockResponse();

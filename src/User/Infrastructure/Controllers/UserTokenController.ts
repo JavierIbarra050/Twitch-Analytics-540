@@ -9,11 +9,11 @@ export class UserTokenController {
 
     public generateToken = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { api_key } = req.body;
+            const api_key = req.body?.api_key;
 
             let emailVo: Email;
             try {
-                emailVo = new Email(req.body.email);
+                emailVo = new Email(req.body?.email);
             } catch (error: any) {
                 res.status(400).json({ error: error.message });
                 return;
