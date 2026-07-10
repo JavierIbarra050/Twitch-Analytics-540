@@ -148,4 +148,32 @@ describe('UserRepositorySQL', () => {
             expect(mockDb.run).not.toHaveBeenCalled();
         });
     });
+
+    describe('verifyToken', () => {
+        it('should return true when token is found and is valid', async () => {
+            const token = 'validtoken';
+            mockDb.get.mockResolvedValue({ id: 5 });
+
+            const result = await repository.verifyToken(token);
+
+            expect(mockDb.get).toHaveBeenCalledWith(
+                "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+                [token]
+            );
+            expect(result).toBe(true);
+        });
+
+        it('should return false when token is not found or expired', async () => {
+            const token = 'invalidtoken';
+            mockDb.get.mockResolvedValue(undefined);
+
+            const result = await repository.verifyToken(token);
+
+            expect(mockDb.get).toHaveBeenCalledWith(
+                "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
+                [token]
+            );
+            expect(result).toBe(false);
+        });
+    });
 });

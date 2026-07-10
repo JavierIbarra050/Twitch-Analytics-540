@@ -1,20 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthMiddleware } from '../../../../src/Shared/Infrastructure/Middlewares/AuthMiddleware';
-import * as database from '../../../../src/Shared/Infrastructure/Database/database';
-
-jest.mock('../../../../src/Shared/Infrastructure/Database/database');
+import { IUserRepository } from '../../../../src/User/Domain/Repositories/IUserRepository';
 
 describe("AuthMiddleware", () => {
     let middleware: AuthMiddleware;
+    let userRepositoryMock: jest.Mocked<IUserRepository>;
     let req: Partial<Request>;
     let res: Partial<Response>;
     let next: NextFunction;
     let jsonMock: jest.Mock;
     let statusMock: jest.Mock;
-    let dbMock: any;
 
     beforeEach(() => {
-        middleware = new AuthMiddleware();
+        userRepositoryMock = {
+            doesUserAlreadyExists: jest.fn(),
+            saveUser: jest.fn(),
+            findByEmail: jest.fn(),
+            saveToken: jest.fn(),
+            verifyToken: jest.fn()
+        } as unknown as jest.Mocked<IUserRepository>;
+
+        middleware = new AuthMiddleware(userRepositoryMock);
         jsonMock = jest.fn();
         statusMock = jest.fn().mockReturnValue({ json: jsonMock });
         next = jest.fn();
@@ -24,11 +30,6 @@ describe("AuthMiddleware", () => {
             status: statusMock,
             json: jsonMock
         };
-
-        dbMock = {
-            get: jest.fn()
-        };
-        jest.spyOn(database, 'getDatabase').mockResolvedValue(dbMock);
     });
 
     it("should return 401 if authorization header is missing", async () => {
@@ -53,14 +54,11 @@ describe("AuthMiddleware", () => {
 
     it("should return 401 if token is not found or expired in database", async () => {
         req.headers = { authorization: "Bearer invalidtoken" };
-        dbMock.get.mockResolvedValue(undefined);
+        userRepositoryMock.verifyToken.mockResolvedValue(false);
 
         await middleware.execute(req as Request, res as Response, next);
 
-        expect(dbMock.get).toHaveBeenCalledWith(
-            "SELECT id FROM user_tokens WHERE token = ? AND expires_at > datetime('now')",
-            ["invalidtoken"]
-        );
+        expect(userRepositoryMock.verifyToken).toHaveBeenCalledWith("invalidtoken");
         expect(statusMock).toHaveBeenCalledWith(401);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Unauthorized. Token is invalid or expired." });
         expect(next).not.toHaveBeenCalled();
@@ -68,7 +66,7 @@ describe("AuthMiddleware", () => {
 
     it("should call next if token is valid and active in database", async () => {
         req.headers = { authorization: "Bearer validtoken" };
-        dbMock.get.mockResolvedValue({ id: 1, user_id: 1, token: "validtoken" });
+        userRepositoryMock.verifyToken.mockResolvedValue(true);
 
         await middleware.execute(req as Request, res as Response, next);
 
@@ -78,7 +76,7 @@ describe("AuthMiddleware", () => {
 
     it("should return 500 on database error", async () => {
         req.headers = { authorization: "Bearer validtoken" };
-        dbMock.get.mockRejectedValue(new Error("DB Connection Error"));
+        userRepositoryMock.verifyToken.mockRejectedValue(new Error("DB Connection Error"));
 
         await middleware.execute(req as Request, res as Response, next);
 
