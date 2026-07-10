@@ -21,5 +21,6 @@ initializeDatabase().then(() => {
         console.log(`Server is running on http://localhost:${PORT}`);
     });
 }).catch(error => {
-    console.error(error);
+    console.error('Fatal: Database initialization failed during startup:', error);
+    process.exit(1);
 });
