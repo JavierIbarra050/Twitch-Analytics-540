@@ -16,7 +16,11 @@ describe("TwitchClient", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        httpClient = new TwitchHttpClient();
+        httpClient = new TwitchHttpClient({
+            port: 3000,
+            twitchClientId: 'test-client-id',
+            twitchClientSecret: 'test-client-secret'
+        } as any);
         client = new TwitchClient(httpClient);
 
         const tokenResponse: Partial<AxiosResponse<TwitchTokenResponse>> = {

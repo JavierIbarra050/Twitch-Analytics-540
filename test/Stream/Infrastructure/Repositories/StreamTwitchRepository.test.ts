@@ -17,7 +17,11 @@ describe("StreamTwitchRepository", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        httpClient = new TwitchHttpClient();
+        httpClient = new TwitchHttpClient({
+            port: 3000,
+            twitchClientId: 'test-client-id',
+            twitchClientSecret: 'test-client-secret'
+        } as any);
         repository = new StreamTwitchRepository(httpClient);
 
         const tokenResponse: Partial<AxiosResponse<TwitchTokenResponse>> = {

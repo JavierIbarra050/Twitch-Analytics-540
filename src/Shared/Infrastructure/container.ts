@@ -1,3 +1,4 @@
+import { config } from './Config/config';
 import { TwitchHttpClient } from './Twitch/TwitchHttpClient';
 import { AuthMiddleware } from './Middlewares/AuthMiddleware';
 
@@ -32,7 +33,7 @@ export const userTokenService = new UserTokenService(userRepository);
 export const userTokenController = new UserTokenController(userTokenService);
 
 // Shared
-export const twitchHttpClient = new TwitchHttpClient();
+export const twitchHttpClient = new TwitchHttpClient(config);
 export const authMiddleware = new AuthMiddleware(userRepository);
 
 // Streamer
@@ -55,3 +56,4 @@ export const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpC
 export const gameCacheRepository = new SQLiteGameCacheRepository();
 export const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);
 export const topOfTheTopsController = new TopOfTheTopsController(topOfTheTopsService);
+export const appConfig = config;

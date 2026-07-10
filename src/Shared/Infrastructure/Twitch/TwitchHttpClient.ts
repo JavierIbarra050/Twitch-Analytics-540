@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { TwitchTokenResponse } from './TwitchTokenResponse';
+import { Config } from '../Config/config';
 
 const TOKEN_EXPIRATION_BUFFER_MS = 60 * 1000; // Refresh token 60s before actual expiry
 
@@ -9,16 +10,9 @@ export class TwitchHttpClient {
     private accessToken: string | null = null;
     private expiresAt: number = 0;
 
-    constructor() {
-        this.clientId = process.env.TWITCH_CLIENT_ID || '';
-        this.clientSecret = process.env.TWITCH_CLIENT_SECRET || '';
-
-        if (!this.clientId) {
-            throw new Error('TWITCH_CLIENT_ID environment variable is missing');
-        }
-        if (!this.clientSecret) {
-            throw new Error('TWITCH_CLIENT_SECRET environment variable is missing');
-        }
+    constructor(config: Config) {
+        this.clientId = config.twitchClientId;
+        this.clientSecret = config.twitchClientSecret;
     }
 
     private async getAppAccessToken(): Promise<string> {

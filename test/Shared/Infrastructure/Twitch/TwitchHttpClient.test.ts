@@ -1,36 +1,15 @@
 import { TwitchHttpClient } from '../../../../src/Shared/Infrastructure/Twitch/TwitchHttpClient';
+import { Config } from '../../../../src/Shared/Infrastructure/Config/config';
 
 describe('TwitchHttpClient Initialization', () => {
-    const originalEnv = process.env;
+    it('should initialize successfully when config is injected', () => {
+        const mockConfig = {
+            port: 3000,
+            twitchClientId: 'client-id',
+            twitchClientSecret: 'secret'
+        } as Config;
 
-    beforeEach(() => {
-        jest.resetModules();
-        process.env = { ...originalEnv };
-    });
-
-    afterAll(() => {
-        process.env = originalEnv;
-    });
-
-    it('should throw an error when TWITCH_CLIENT_ID is missing', () => {
-        delete process.env.TWITCH_CLIENT_ID;
-        process.env.TWITCH_CLIENT_SECRET = 'secret';
-
-        expect(() => new TwitchHttpClient()).toThrow('TWITCH_CLIENT_ID environment variable is missing');
-    });
-
-    it('should throw an error when TWITCH_CLIENT_SECRET is missing', () => {
-        process.env.TWITCH_CLIENT_ID = 'client-id';
-        delete process.env.TWITCH_CLIENT_SECRET;
-
-        expect(() => new TwitchHttpClient()).toThrow('TWITCH_CLIENT_SECRET environment variable is missing');
-    });
-
-    it('should instantiate successfully when both variables are defined', () => {
-        process.env.TWITCH_CLIENT_ID = 'client-id';
-        process.env.TWITCH_CLIENT_SECRET = 'secret';
-
-        const client = new TwitchHttpClient();
+        const client = new TwitchHttpClient(mockConfig);
         expect(client).toBeDefined();
     });
 });
