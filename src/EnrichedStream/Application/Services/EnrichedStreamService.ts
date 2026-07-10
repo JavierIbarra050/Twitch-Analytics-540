@@ -1,17 +1,32 @@
 import { EnrichedStream } from "../../Domain/Entities/EnrichedStream";
 import { ITwitchClient } from "../../Domain/Repositories/ITwitchClient";
 
+/**
+ * Minimum number of streams to fetch from Twitch API to ensure we have
+ * a representative sample for sorting and extracting the top streams.
+ */
+const MINIMUM_STREAMS_TO_FETCH = 100;
+
 export class EnrichedStreamService {
     constructor(
         private readonly twitchClient: ITwitchClient
     ) {}
 
+    /**
+     * Obtains the top live streams enriched with user profiles.
+     * 
+     * @param limit Number of top streams to return.
+     * @returns A list of EnrichedStream entities.
+     */
     async getTopEnrichedStreams(limit: number): Promise<EnrichedStream[]> {
         if (limit <= 0) {
             return [];
         }
 
-        const fetchLimit = Math.max(limit, 100);
+        // We fetch at least 100 streams to local memory to ensure we have a sufficient
+        // sample pool to sort by viewerCount descending, in case the source API order
+        // fluctuates or we need to guarantee accurate local top rankings.
+        const fetchLimit = Math.max(limit, MINIMUM_STREAMS_TO_FETCH);
         const rawStreams = await this.twitchClient.getRawLiveStreams(fetchLimit);
 
         const sortedStreams = [...rawStreams].sort((a, b) => b.viewerCount - a.viewerCount);
