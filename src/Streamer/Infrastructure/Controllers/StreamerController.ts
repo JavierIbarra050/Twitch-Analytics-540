@@ -11,12 +11,12 @@ export class StreamerController {
         try {
             const idParam = req.query.id;
 
-            if (!idParam) {
+            if (typeof idParam !== 'string') {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
                 return;
             }
 
-            const idParamNumber = parseInt(idParam as string, 10);
+            const idParamNumber = parseInt(idParam, 10);
 
             if (isNaN(idParamNumber)) {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
