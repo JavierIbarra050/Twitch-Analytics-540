@@ -98,4 +98,19 @@ describe('TopOfTheTopsService', () => {
         expect(result).toHaveLength(1);
         expect(cacheRepositoryMock.saveCachedStats).toHaveBeenCalled();
     });
+
+    it('should skip game if the most viewed video lacks a user_name', async () => {
+        cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(12);
+        twitchClientMock.getTopGames.mockResolvedValue([
+            { id: '1', name: 'Game 1' }
+        ]);
+        twitchClientMock.getTopVideosByGame.mockResolvedValue([
+            { id: 'v1', user_id: 'u1', user_name: '', title: 'Title 1', view_count: 100, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
+        ]);
+
+        const result = await service.getTopOfTheTops();
+
+        expect(result).toHaveLength(0);
+        expect(cacheRepositoryMock.saveCachedStats).not.toHaveBeenCalled();
+    });
 });

@@ -39,6 +39,10 @@ export class TopOfTheTopsService {
             const mostViewedVideo = videos[0];
             const targetUser = mostViewedVideo.user_name;
 
+            if (!targetUser) {
+                continue;
+            }
+
             const userVideos = videos.filter(v => v.user_name && v.user_name.toLowerCase() === targetUser.toLowerCase());
             const totalVideosCount = userVideos.length;
             const totalViewsSum = userVideos.reduce((sum, v) => sum + (v.view_count || 0), 0);
