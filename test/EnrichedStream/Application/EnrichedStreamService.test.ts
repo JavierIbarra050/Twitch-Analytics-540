@@ -59,4 +59,19 @@ describe("EnrichedStreamService", () => {
         expect(result).toEqual([]);
         expect(twitchClientMock.getUsersProfiles).not.toHaveBeenCalled();
     });
+
+    it("should deduplicate userIds before querying user profiles", async () => {
+        const rawStream1 = EnrichedStreamMother.createRawStream({ id: "1", userId: "user1", viewerCount: 100, userName: "User One" });
+        const rawStream2 = EnrichedStreamMother.createRawStream({ id: "2", userId: "user1", viewerCount: 500, userName: "User One Dup" });
+
+        const profile1 = EnrichedStreamMother.createUserProfile({ id: "user1", displayName: "User One Enriched", profileImageUrl: "url1" });
+
+        twitchClientMock.getRawLiveStreams.mockResolvedValue([rawStream1, rawStream2]);
+        twitchClientMock.getUsersProfiles.mockResolvedValue([profile1]);
+
+        const result = await service.getTopEnrichedStreams(2);
+
+        expect(twitchClientMock.getUsersProfiles).toHaveBeenCalledWith(["user1"]);
+        expect(result.length).toBe(2);
+    });
 });

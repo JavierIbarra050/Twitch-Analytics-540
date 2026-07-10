@@ -36,7 +36,8 @@ export class EnrichedStreamService {
             return [];
         }
 
-        const userIds = topStreams.map(stream => stream.userId);
+        // Deduplicate userIds to optimize request payload sizes in the batch query
+        const userIds = Array.from(new Set(topStreams.map(stream => stream.userId)));
         const userProfiles = await this.twitchClient.getUsersProfiles(userIds);
 
         const profilesMap = new Map(userProfiles.map(profile => [profile.id, profile]));
