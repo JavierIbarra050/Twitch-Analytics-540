@@ -11,7 +11,7 @@ export class UserController {
         try {
             let emailVo: Email;
             try {
-                emailVo = new Email(req.body.email);
+                emailVo = new Email(req.body?.email);
             } catch (error: any) {
                 res.status(400).json({ error: error.message });
                 return;
