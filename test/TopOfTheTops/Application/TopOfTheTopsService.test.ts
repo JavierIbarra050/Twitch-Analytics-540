@@ -23,7 +23,7 @@ describe('TopOfTheTopsService', () => {
 
     it('should return cached stats when cache age is less than 10 minutes and since is not provided', async () => {
         const cachedStats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', '2', '200', 'Title 1', '100', '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
         ];
         cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(5);
         cacheRepositoryMock.getCachedStats.mockResolvedValue(cachedStats);
@@ -37,7 +37,7 @@ describe('TopOfTheTopsService', () => {
 
     it('should return cached stats when cache age is within since parameter limit', async () => {
         const cachedStats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', '2', '200', 'Title 1', '100', '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
         ];
         cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(15);
         cacheRepositoryMock.getCachedStats.mockResolvedValue(cachedStats);
@@ -64,8 +64,8 @@ describe('TopOfTheTopsService', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].getUserName()).toBe('User 1');
-        expect(result[0].getTotalVideos()).toBe('2');
-        expect(result[0].getTotalViews()).toBe('150');
+        expect(result[0].getTotalVideos()).toBe(2);
+        expect(result[0].getTotalViews()).toBe(150);
         expect(cacheRepositoryMock.saveCachedStats).toHaveBeenCalledWith(result);
     });
 

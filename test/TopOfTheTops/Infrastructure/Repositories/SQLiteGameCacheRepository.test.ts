@@ -46,20 +46,23 @@ describe('SQLiteGameCacheRepository', () => {
         expect(result).toBeInstanceOf(Array);
         expect(result![0]).toBeInstanceOf(TopOfTheTops);
         expect(result![0].getGameId()).toBe('509658');
+        expect(result![0].getTotalVideos()).toBe(4);
+        expect(result![0].getTotalViews()).toBe(1000000);
+        expect(result![0].getMostViewedViews()).toBe(50000);
     });
 
     it('should delete previous cache and insert new stats', async () => {
         const stat = new TopOfTheTops(
-            '509658', 'Just Chatting', 'LCK', '4', '1000000',
-            'Title', '50000', '1h', '2026-07-09T00:00:00Z'
+            '509658', 'Just Chatting', 'LCK', 4, 1000000,
+            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
         );
 
         await repository.saveCachedStats([stat]);
 
         expect(dbMock.run).toHaveBeenNthCalledWith(1, "DELETE FROM game_cache");
         expect(dbMock.run).toHaveBeenNthCalledWith(2, expect.stringContaining("INSERT INTO game_cache"), [
-            '509658', 'Just Chatting', 'LCK', '4', '1000000',
-            'Title', '50000', '1h', '2026-07-09T00:00:00Z'
+            '509658', 'Just Chatting', 'LCK', 4, 1000000,
+            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
         ]);
     });
 
