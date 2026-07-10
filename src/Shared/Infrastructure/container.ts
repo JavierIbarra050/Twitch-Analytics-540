@@ -25,33 +25,27 @@ import { UserController } from '../../User/Infrastructure/Controllers/UserContro
 import { UserTokenService } from '../../User/Application/Services/UserTokenService';
 import { UserTokenController } from '../../User/Infrastructure/Controllers/UserTokenController';
 
-// User (instantiated first because AuthMiddleware depends on it)
 export const userRepository = new UserRepositorySQL();
 export const userService = new UserService(userRepository);
 export const userController = new UserController(userService);
-export const userTokenService = new UserTokenService(userRepository);
+export const userTokenService = new UserTokenService(userRepository, config.tokenExpirationDays);
 export const userTokenController = new UserTokenController(userTokenService);
 
-// Shared
 export const twitchHttpClient = new TwitchHttpClient(config);
 export const authMiddleware = new AuthMiddleware(userRepository);
 
-// Streamer
 export const streamerRepository = new StreamerTwitchRepository(twitchHttpClient);
 export const streamerService = new StreamerService(streamerRepository);
 export const streamerController = new StreamerController(streamerService);
 
-// Stream
 export const streamRepository = new StreamTwitchRepository(twitchHttpClient);
 export const streamService = new StreamService(streamRepository);
 export const streamController = new StreamController(streamService);
 
-// EnrichedStream
 export const enrichedStreamClient = new EnrichedTwitchClient(twitchHttpClient);
 export const enrichedStreamService = new EnrichedStreamService(enrichedStreamClient);
 export const enrichedStreamController = new EnrichedStreamController(enrichedStreamService);
 
-// TopOfTheTops
 export const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpClient);
 export const gameCacheRepository = new SQLiteGameCacheRepository();
 export const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);

@@ -1,11 +1,10 @@
 import crypto from 'crypto';
 import { IUserRepository } from '../../Domain/Repositories/IUserRepository';
 
-const TOKEN_EXPIRATION_DAYS = 3;
-
 export class UserTokenService {
     constructor(
         private readonly userRepository: IUserRepository,
+        private readonly tokenExpirationDays: number,
     ) {}
 
     async generateToken(email: string, apiKey: string): Promise<string> {
@@ -29,7 +28,7 @@ export class UserTokenService {
 
     private calculateExpirationDate(): Date {
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + TOKEN_EXPIRATION_DAYS);
+        expiresAt.setDate(expiresAt.getDate() + this.tokenExpirationDays);
         return expiresAt;
     }
 }

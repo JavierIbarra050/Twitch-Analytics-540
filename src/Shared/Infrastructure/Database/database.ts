@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
-import path from 'path';
+import { config } from '../Config/config';
 
 export class DatabaseConnection {
   private static instance: DatabaseConnection | null = null;
@@ -18,7 +18,6 @@ export class DatabaseConnection {
   public async getConnection(): Promise<Database> {
     if (this.db) {
       try {
-        // Simple ping check to see if the connection is still alive/valid
         await this.db.get('SELECT 1');
         return this.db;
       } catch (error) {
@@ -27,7 +26,7 @@ export class DatabaseConnection {
       }
     }
 
-    const dbPath = path.resolve(__dirname, '../../../../database.sqlite');
+    const dbPath = config.databasePath;
     sqlite3.verbose();
 
     this.db = await open({

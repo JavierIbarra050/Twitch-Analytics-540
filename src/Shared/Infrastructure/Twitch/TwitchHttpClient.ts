@@ -2,7 +2,7 @@ import axios from 'axios';
 import { TwitchTokenResponse } from './TwitchTokenResponse';
 import { Config } from '../Config/config';
 
-const TOKEN_EXPIRATION_BUFFER_MS = 60 * 1000; // Refresh token 60s before actual expiry
+const TOKEN_EXPIRATION_BUFFER_MS = 60 * 1000;
 
 export class TwitchHttpClient {
     private readonly clientId: string;
@@ -62,8 +62,6 @@ export class TwitchHttpClient {
         try {
             return await this.executeGet<T>(url, params);
         } catch (error: any) {
-            // If Twitch returns 401, the token may have been revoked externally.
-            // Invalidate the cached token and retry once with a fresh one.
             if (error?.response?.status === 401) {
                 this.invalidateToken();
                 return this.executeGet<T>(url, params);
