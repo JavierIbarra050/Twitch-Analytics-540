@@ -74,6 +74,36 @@ npm test
 
 ---
 
+## Entorno de Producción (alwaysdata)
+
+La versión de producción de la API está desplegada en alwaysdata y conectada a una base de datos MySQL en la nube.
+
+*   **URL Base de Producción:** `https://javieribarra540.alwaysdata.net/analytics`
+
+### Cómo probar la API en producción
+
+Puedes interactuar con los endpoints de producción del mismo modo que en local, sustituyendo `http://localhost:3000` por la URL de producción:
+
+1.  **Registro (POST /analytics/register):** Envía tu correo para recibir una API Key.
+    ```bash
+    curl -X POST https://javieribarra540.alwaysdata.net/analytics/register \
+         -H "Content-Type: application/json" \
+         -d '{"email": "usuario@example.com"}'
+    ```
+2.  **Obtención de Token (POST /analytics/token):** Genera tu token de sesión (válido por 3 días).
+    ```bash
+    curl -X POST https://javieribarra540.alwaysdata.net/analytics/token \
+         -H "Content-Type: application/json" \
+         -d '{"email": "usuario@example.com", "api_key": "tu_api_key_recibida"}'
+    ```
+3.  **Consultas Protegidas:** Usa el token en la cabecera `Authorization`.
+    ```bash
+    curl -X GET "https://javieribarra540.alwaysdata.net/analytics/streams/enriched?limit=3" \
+         -H "Authorization: Bearer tu_token_de_sesión"
+    ```
+
+---
+
 ## Sistema de Autenticación
 
 Los endpoints marcados como Premium requieren un token de sesión temporal válido enviado en la cabecera Authorization.
