@@ -142,8 +142,7 @@ export class DatabaseConnection {
       return this.db;
     }
 
-    const isTest = process.env.NODE_ENV === 'test' || !!process.env.DATABASE_PATH;
-    if (!isTest && config.dbHost) {
+    if (config.dbHost) {
       this.db = new MySQLDatabaseAdapter({
         host: config.dbHost,
         port: config.dbPort,
