@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StreamService } from "../../Application/Services/StreamService";
+import { TwitchUnauthorizedError } from "../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
 
 export class StreamController {
     constructor (
@@ -18,7 +19,7 @@ export class StreamController {
             res.status(200).json(responseData);
 
         } catch (error: any) {
-            if (error.message && error.message.includes("Unauthorized")) {
+            if (error instanceof TwitchUnauthorizedError) {
                 res.status(401).json({ error: "Unauthorized. Twitch access token is invalid or has expired." });
                 return;
             }
