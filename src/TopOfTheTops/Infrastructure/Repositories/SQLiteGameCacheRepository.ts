@@ -5,7 +5,17 @@ import { getDatabase } from "../../../Shared/Infrastructure/Database/database";
 export class SQLiteGameCacheRepository implements IGameCacheRepository {
     async getCachedStats(): Promise<TopOfTheTops[] | null> {
         const db = await getDatabase();
-        const rows = await db.all("SELECT * FROM game_cache");
+        const rows = await db.all<{
+            game_id: string;
+            game_name: string;
+            user_name: string;
+            total_videos: string;
+            total_views: string;
+            most_viewed_title: string;
+            most_viewed_views: string;
+            most_viewed_duration: string;
+            most_viewed_created_at: string;
+        }>("SELECT * FROM game_cache");
         if (rows.length === 0) {
             return null;
         }
@@ -24,7 +34,11 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
 
     async saveCachedStats(stats: TopOfTheTops[]): Promise<void> {
         const db = await getDatabase();
-        await db.run("BEGIN TRANSACTION");
+        if (db.type === 'mysql') {
+            await db.run("START TRANSACTION");
+        } else {
+            await db.run("BEGIN TRANSACTION");
+        }
         try {
             await db.run("DELETE FROM game_cache");
             
@@ -33,7 +47,7 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
                     `INSERT INTO game_cache (
                         game_id, game_name, user_name, total_videos, total_views,
                         most_viewed_title, most_viewed_views, most_viewed_duration, most_viewed_created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                     [
                         stat.getGameId(),
                         stat.getGameName(),
@@ -56,16 +70,20 @@ export class SQLiteGameCacheRepository implements IGameCacheRepository {
 
     async getCacheAgeInMinutes(): Promise<number | null> {
         const db = await getDatabase();
-        const row = await db.get("SELECT MAX(updated_at) as last_update FROM game_cache");
+        const row = await db.get<{ last_update: string }>("SELECT MAX(updated_at) as last_update FROM game_cache");
         if (!row || !row.last_update) {
             return null;
         }
         
-        const diffRow = await db.get(
-            "SELECT (strftime('%s', 'now') - strftime('%s', ?)) / 60.0 AS diff_minutes",
-            [row.last_update]
-        );
-        
-        return diffRow ? Math.max(0, parseFloat(diffRow.diff_minutes)) : null;
+        if (db.type === 'mysql') {
+            const diffRow = await db.get<{ diff_minutes: number }>("SELECT TIMESTAMPDIFF(MINUTE, ?, NOW()) AS diff_minutes", [row.last_update]);
+            return diffRow ? Math.max(0, diffRow.diff_minutes) : null;
+        } else {
+            const diffRow = await db.get<{ diff_minutes: number }>(
+                "SELECT (strftime('%s', 'now') - strftime('%s', ?)) / 60.0 AS diff_minutes",
+                [row.last_update]
+            );
+            return diffRow ? Math.max(0, diffRow.diff_minutes) : null;
+        }
     }
 }
