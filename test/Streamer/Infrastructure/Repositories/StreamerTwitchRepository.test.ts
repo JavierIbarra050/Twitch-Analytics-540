@@ -30,7 +30,7 @@ describe("StreamerTwitchRepository", () => {
             data: [
                 {
                     id: "83232866",
-                    login: "ibai",
+                    login: "ibai_",
                     display_name: "Ibai",
                     type: "",
                     broadcaster_type: "partner",
@@ -50,6 +50,7 @@ describe("StreamerTwitchRepository", () => {
         expect(httpClientMock.get).toHaveBeenCalledWith('users', { id: "83232866" });
         expect(result).toEqual({
             id: 83232866,
+            login: "ibai_",
             displayName: "Ibai",
             type: "",
             broadcasterType: "partner",

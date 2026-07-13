@@ -24,6 +24,7 @@ export class StreamerTwitchRepository implements IStreamerExternalRepository {
 
         return {
             id: Number(twitchUser.id),
+            login: twitchUser.login,
             displayName: twitchUser.display_name,
             type: twitchUser.type,
             broadcasterType: twitchUser.broadcaster_type,

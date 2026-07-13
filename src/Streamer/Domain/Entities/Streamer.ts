@@ -1,5 +1,6 @@
 export type Streamer = {
     id: number;
+    login: string;
     displayName: string;
     type: string;
     broadcasterType: string;

@@ -21,7 +21,7 @@ export class StreamerController {
 
             res.status(200).json({
                 id: streamer.id.toString(),
-                login: streamer.displayName.toLowerCase().replace(/\s+/g, ''),
+                login: streamer.login,
                 display_name: streamer.displayName,
                 type: streamer.type,
                 broadcaster_type: streamer.broadcasterType,

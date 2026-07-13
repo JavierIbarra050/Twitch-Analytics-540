@@ -64,6 +64,7 @@ describe('End-to-End Analytics API Flow', () => {
                 data: [
                     {
                         id: '83232866',
+                        login: 'ibai',
                         display_name: 'Ibai',
                         type: '',
                         broadcaster_type: 'partner',
