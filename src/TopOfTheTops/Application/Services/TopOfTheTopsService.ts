@@ -1,4 +1,4 @@
-import { ITwitchClient } from "../../Domain/Repositories/ITwitchClient";
+import { ITwitchClient, TwitchGame } from "../../Domain/Repositories/ITwitchClient";
 import { IGameCacheRepository } from "../../Domain/Repositories/IGameCacheRepository";
 import { TopOfTheTops } from "../../Domain/Entities/TopOfTheTops";
 
@@ -28,42 +28,43 @@ export class TopOfTheTopsService {
         }
 
         const topGames = await this.twitchClient.getTopGames(3);
-        const results: TopOfTheTops[] = [];
-
-        for (const game of topGames) {
-            const videos = await this.twitchClient.getTopVideosByGame(game.id, 40);
-            if (videos.length === 0) {
-                continue;
-            }
-
-            const mostViewedVideo = videos[0];
-            const targetUser = mostViewedVideo.user_name;
-
-            if (!targetUser) {
-                continue;
-            }
-
-            const userVideos = videos.filter(v => v.user_name && v.user_name.toLowerCase() === targetUser.toLowerCase());
-            const totalVideosCount = userVideos.length;
-            const totalViewsSum = userVideos.reduce((sum, v) => sum + (v.view_count || 0), 0);
-
-            results.push(new TopOfTheTops(
-                game.id,
-                game.name,
-                mostViewedVideo.user_name,
-                totalVideosCount,
-                totalViewsSum,
-                mostViewedVideo.title,
-                mostViewedVideo.view_count,
-                mostViewedVideo.duration,
-                mostViewedVideo.created_at
-            ));
-        }
+        const gameStats = await Promise.all(topGames.map(game => this.buildGameStats(game)));
+        const results = gameStats.filter((stat): stat is TopOfTheTops => stat !== null);
 
         if (results.length > 0) {
             await this.cacheRepository.saveCachedStats(results);
         }
 
         return results;
+    }
+
+    private async buildGameStats(game: TwitchGame): Promise<TopOfTheTops | null> {
+        const videos = await this.twitchClient.getTopVideosByGame(game.id, 40);
+        if (videos.length === 0) {
+            return null;
+        }
+
+        const mostViewedVideo = videos[0];
+        const targetUser = mostViewedVideo.user_name;
+
+        if (!targetUser) {
+            return null;
+        }
+
+        const userVideos = videos.filter(v => v.user_name && v.user_name.toLowerCase() === targetUser.toLowerCase());
+        const totalVideosCount = userVideos.length;
+        const totalViewsSum = userVideos.reduce((sum, v) => sum + (v.view_count || 0), 0);
+
+        return new TopOfTheTops(
+            game.id,
+            game.name,
+            mostViewedVideo.user_name,
+            totalVideosCount,
+            totalViewsSum,
+            mostViewedVideo.title,
+            mostViewedVideo.view_count,
+            mostViewedVideo.duration,
+            mostViewedVideo.created_at
+        );
     }
 }

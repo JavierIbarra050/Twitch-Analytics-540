@@ -7,7 +7,7 @@ export class EnrichedStreamController {
         private readonly service: EnrichedStreamService
     ) {}
 
-    async getTopEnrichedStreams(req: Request, res: Response): Promise<void> {
+    public getTopEnrichedStreams = async (req: Request, res: Response): Promise<void> => {
         try {
             const limitParam = req.query.limit;
 
@@ -36,7 +36,7 @@ export class EnrichedStreamController {
             }));
 
             res.status(200).json(response);
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof TwitchUnauthorizedError) {
                 res.status(401).json({ error: "Unauthorized. Twitch access token is invalid or has expired." });
                 return;
@@ -44,5 +44,5 @@ export class EnrichedStreamController {
 
             res.status(500).json({ error: "Internal server error." });
         }
-    }
+    };
 }

@@ -18,7 +18,7 @@ describe("StreamerService", () => {
         
         twitchRepositoryMock.searchStreamerById.mockResolvedValue(expectedStreamer);
 
-        const streamer = await streamerService.getStreamerById(expectedStreamer.id);
+        const streamer = await streamerService.getStreamerById(expectedStreamer.getId());
 
         expect(streamer).toEqual(expectedStreamer);
     });

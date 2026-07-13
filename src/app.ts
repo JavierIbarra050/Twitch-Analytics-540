@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import analyticsRoutes from "./Streamer/Infrastructure/Routes/analyticsRoutes";
 import userRoutes from "./User/Infrastructure/Routes/userRoutes";
@@ -10,5 +10,14 @@ app.use(express.json());
 
 app.use('/analytics', analyticsRoutes);
 app.use('/analytics', userRoutes);
+
+app.use((_req: Request, res: Response) => {
+    res.status(404).json({ error: 'Not Found.' });
+});
+
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error.' });
+});
 
 export { app };
