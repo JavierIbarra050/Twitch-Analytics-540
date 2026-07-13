@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TopOfTheTopsService } from "../../Application/Services/TopOfTheTopsService";
+import { TwitchUnauthorizedError } from "../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
 
 export class TopOfTheTopsController {
     constructor(private readonly service: TopOfTheTopsService) {}
@@ -37,6 +38,11 @@ export class TopOfTheTopsController {
 
             res.status(200).json(response);
         } catch (error) {
+            if (error instanceof TwitchUnauthorizedError) {
+                res.status(401).json({ error: "Unauthorized. Twitch access token is invalid or has expired." });
+                return;
+            }
+
             res.status(500).json({ error: "Internal Server Error. Please try again later." });
         }
     }
