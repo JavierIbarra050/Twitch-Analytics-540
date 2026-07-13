@@ -1,5 +1,4 @@
-import sqlite3 from 'sqlite3';
-import { open, Database as SQLiteDatabase } from 'sqlite';
+import type { Database as SQLiteDatabase } from 'sqlite';
 import mysql from 'mysql2/promise';
 import { config } from '../Config/config';
 
@@ -20,6 +19,9 @@ export class SQLiteDatabaseAdapter implements IDatabase {
 
   private async getConn(): Promise<SQLiteDatabase> {
     if (!this.db) {
+      const sqliteModule = await import('sqlite3');
+      const sqlite3 = sqliteModule.default || (sqliteModule as any);
+      const { open } = await import('sqlite');
       sqlite3.verbose();
       this.db = await open({
         filename: this.dbPath,
