@@ -29,10 +29,11 @@ describe("StreamerController", () => {
     it("should return streamer details and 200 status when streamer is found", async () => {
         const expectedStreamer = StreamerMother.create({
             id: 83232866,
+            login: "ibai_",
             displayName: "Ibai",
             createdAt: new Date("2026-07-08T13:40:00Z")
         });
-        
+
         streamerServiceMock.getStreamerById.mockResolvedValue(expectedStreamer);
         reqMock.query = { id: "83232866" };
 
@@ -42,7 +43,7 @@ describe("StreamerController", () => {
         expect(resMock.status).toHaveBeenCalledWith(200);
         expect(resMock.json).toHaveBeenCalledWith({
             id: "83232866",
-            login: "ibai",
+            login: "ibai_",
             display_name: "Ibai",
             type: expectedStreamer.type,
             broadcaster_type: expectedStreamer.broadcasterType,

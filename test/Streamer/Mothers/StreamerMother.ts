@@ -4,6 +4,7 @@ export class StreamerMother {
     static create(overrides?: Partial<Streamer>): Streamer {
         return {
             id: overrides?.id ?? 123456,
+            login: overrides?.login ?? "default_streamer",
             displayName: overrides?.displayName ?? "Default Streamer",
             type: overrides?.type ?? "",
             broadcasterType: overrides?.broadcasterType ?? "",
