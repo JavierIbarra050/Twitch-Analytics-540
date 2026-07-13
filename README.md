@@ -106,7 +106,7 @@ Puedes interactuar con los endpoints de producción del mismo modo que en local,
 
 ## Sistema de Autenticación
 
-Los endpoints marcados como Premium requieren un token de sesión temporal válido enviado en la cabecera Authorization.
+Todos los endpoints bajo `/analytics` requieren un token de sesión temporal válido enviado en la cabecera Authorization. Los endpoints marcados como Premium, además, ofrecen funcionalidad adicional (enriquecimiento de datos y caché) reservada a este sistema de autenticación.
 
 ### Formato de la Cabecera
 ```http
@@ -132,11 +132,13 @@ Obtiene información detallada de un canal o creador de contenido mediante su ID
 
 *   **Método:** GET
 *   **Ruta:** /analytics/streamer
+*   **Autenticación requerida:** Sí (Bearer Token)
 *   **Query Params:**
     *   id (numérico, obligatorio): ID del streamer en Twitch.
 *   **Ejemplo de Petición:**
     ```bash
-    curl -X GET "http://localhost:3000/analytics/streamer?id=83232866"
+    curl -X GET "http://localhost:3000/analytics/streamer?id=83232866" \
+         -H "Authorization: Bearer generated_token"
     ```
 *   **Respuestas:**
     *   **200 OK:**
@@ -158,6 +160,10 @@ Obtiene información detallada de un canal o creador de contenido mediante su ID
         ```json
         { "error": "Invalid or missing 'id' parameter." }
         ```
+    *   **401 Unauthorized (Token de sesión inválido, expirado o ausente):**
+        ```json
+        { "error": "Unauthorized. Token is invalid or expired." }
+        ```
     *   **401 Unauthorized (Token de acceso de Twitch inválido):**
         ```json
         { "error": "Unauthorized. Twitch access token is invalid or has expired." }
@@ -174,9 +180,11 @@ Obtiene un listado simple de las emisiones en vivo que están activas actualment
 
 *   **Método:** GET
 *   **Ruta:** /analytics/streams
+*   **Autenticación requerida:** Sí (Bearer Token)
 *   **Ejemplo de Petición:**
     ```bash
-    curl -X GET "http://localhost:3000/analytics/streams"
+    curl -X GET "http://localhost:3000/analytics/streams" \
+         -H "Authorization: Bearer generated_token"
     ```
 *   **Respuestas:**
     *   **200 OK:**
@@ -192,7 +200,11 @@ Obtiene un listado simple de las emisiones en vivo que están activas actualment
           }
         ]
         ```
-    *   **401 Unauthorized:**
+    *   **401 Unauthorized (Token de sesión inválido, expirado o ausente):**
+        ```json
+        { "error": "Unauthorized. Token is invalid or expired." }
+        ```
+    *   **401 Unauthorized (Token de acceso de Twitch inválido):**
         ```json
         { "error": "Unauthorized. Twitch access token is invalid or has expired." }
         ```
