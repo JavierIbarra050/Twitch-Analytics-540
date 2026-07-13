@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const container_1 = require("../../../Shared/Infrastructure/container");
+const router = (0, express_1.Router)();
+router.get('/streamer', container_1.authMiddleware.execute, container_1.streamerController.getStreamerById);
+router.get('/streams', container_1.authMiddleware.execute, container_1.streamController.getLiveStreams);
+router.get('/streams/enriched', container_1.authMiddleware.execute.bind(container_1.authMiddleware), container_1.enrichedStreamController.getTopEnrichedStreams.bind(container_1.enrichedStreamController));
+router.get('/topsofthetops', container_1.authMiddleware.execute.bind(container_1.authMiddleware), container_1.topOfTheTopsController.getTopOfTheTops.bind(container_1.topOfTheTopsController));
+exports.default = router;
