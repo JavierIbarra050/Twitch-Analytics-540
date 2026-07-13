@@ -15,10 +15,17 @@ export class UserRepositorySQL implements IUserRepository {
 
     async saveUser(email: string, apiKey: string): Promise<User> {
         const db = await getDatabase();
-        await db.run(
-            'INSERT INTO users (email, api_key) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET api_key = excluded.api_key',
-            [email, apiKey]
-        );
+        if (db.type === 'mysql') {
+            await db.run(
+                'INSERT INTO users (email, api_key) VALUES (?, ?) ON DUPLICATE KEY UPDATE api_key = VALUES(api_key)',
+                [email, apiKey]
+            );
+        } else {
+            await db.run(
+                'INSERT INTO users (email, api_key) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET api_key = excluded.api_key',
+                [email, apiKey]
+            );
+        }
         return new User(email, apiKey);
     }
 
@@ -47,10 +54,18 @@ export class UserRepositorySQL implements IUserRepository {
 
     async verifyToken(token: string): Promise<boolean> {
         const db = await getDatabase();
-        const tokenRecord = await db.get<{ id: number }>(
-            "SELECT id FROM user_tokens WHERE token = ? AND datetime(expires_at) > datetime('now')",
-            [token]
-        );
+        let tokenRecord;
+        if (db.type === 'mysql') {
+            tokenRecord = await db.get<{ id: number }>(
+                'SELECT id FROM user_tokens WHERE token = ? AND expires_at > NOW()',
+                [token]
+            );
+        } else {
+            tokenRecord = await db.get<{ id: number }>(
+                "SELECT id FROM user_tokens WHERE token = ? AND datetime(expires_at) > datetime('now')",
+                [token]
+            );
+        }
         return !!tokenRecord;
     }
 }

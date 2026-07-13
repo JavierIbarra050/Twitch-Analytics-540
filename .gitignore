@@ -1,8 +1,8 @@
-    database.sqlite
-    *.sqlite
-    *.db
-    
-    node_modules/
-    dist/
-    
-    .env
+database.sqlite
+*.sqlite
+*.db
+
+node_modules/
+dist/
+
+.env
