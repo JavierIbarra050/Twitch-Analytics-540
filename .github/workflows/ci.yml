@@ -24,6 +24,9 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          TWITCH_CLIENT_ID: ci-client-id
+          TWITCH_CLIENT_SECRET: ci-client-secret
 
   docker-build:
     runs-on: ubuntu-latest
