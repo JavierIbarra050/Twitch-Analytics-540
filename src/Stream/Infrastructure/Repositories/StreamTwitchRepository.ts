@@ -1,6 +1,6 @@
 import { IStreamExternalRepository } from "../../Domain/Repositories/IStreamExternalRepository";
 import { Stream } from "../../Domain/Entities/Stream";
-import { TwitchStreamResponse } from "../TwitchResponses/TwitchStreamResponse";
+import { TwitchStreamResponse } from "../../../Shared/Infrastructure/Twitch/TwitchApiResponses";
 import { TwitchHttpClient } from "../../../Shared/Infrastructure/Twitch/TwitchHttpClient";
 
 export class StreamTwitchRepository implements IStreamExternalRepository {

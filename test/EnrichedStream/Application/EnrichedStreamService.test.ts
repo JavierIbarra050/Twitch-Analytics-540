@@ -51,6 +51,15 @@ describe("EnrichedStreamService", () => {
         expect(result[1].getViewerCount()).toBe(300);
     });
 
+    it("should cap the fetch limit at Twitch's max of 100 even when a larger limit is requested", async () => {
+        twitchClientMock.getRawLiveStreams.mockResolvedValue([]);
+        twitchClientMock.getUsersProfiles.mockResolvedValue([]);
+
+        await service.getTopEnrichedStreams(150);
+
+        expect(twitchClientMock.getRawLiveStreams).toHaveBeenCalledWith(100);
+    });
+
     it("should return empty array if no live streams are found", async () => {
         twitchClientMock.getRawLiveStreams.mockResolvedValue([]);
 

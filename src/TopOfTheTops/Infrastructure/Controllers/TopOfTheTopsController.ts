@@ -5,7 +5,7 @@ import { TwitchUnauthorizedError } from "../../../Shared/Infrastructure/Twitch/T
 export class TopOfTheTopsController {
     constructor(private readonly service: TopOfTheTopsService) {}
 
-    async getTopOfTheTops(req: Request, res: Response): Promise<void> {
+    public getTopOfTheTops = async (req: Request, res: Response): Promise<void> => {
         try {
             const sinceQuery = req.query.since;
             let since: number | undefined;
@@ -45,5 +45,5 @@ export class TopOfTheTopsController {
 
             res.status(500).json({ error: "Internal Server Error. Please try again later." });
         }
-    }
+    };
 }

@@ -47,12 +47,12 @@ describe("StreamerController", () => {
             id: "83232866",
             login: "ibai_",
             display_name: "Ibai",
-            type: expectedStreamer.type,
-            broadcaster_type: expectedStreamer.broadcasterType,
-            description: expectedStreamer.description,
-            profile_image_url: expectedStreamer.profileImageUrl,
-            offline_image_url: expectedStreamer.offlineImageUrl,
-            view_count: expectedStreamer.viewCount,
+            type: expectedStreamer.getType(),
+            broadcaster_type: expectedStreamer.getBroadcasterType(),
+            description: expectedStreamer.getDescription(),
+            profile_image_url: expectedStreamer.getProfileImageUrl(),
+            offline_image_url: expectedStreamer.getOfflineImageUrl(),
+            view_count: expectedStreamer.getViewCount(),
             created_at: "2026-07-08T13:40:00.000Z"
         });
     });

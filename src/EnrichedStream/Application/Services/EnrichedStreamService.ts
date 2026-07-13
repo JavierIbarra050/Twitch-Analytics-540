@@ -2,6 +2,7 @@ import { EnrichedStream } from "../../Domain/Entities/EnrichedStream";
 import { ITwitchClient } from "../../Domain/Repositories/ITwitchClient";
 
 const MINIMUM_STREAMS_TO_FETCH = 100;
+const TWITCH_MAX_STREAMS_PER_REQUEST = 100;
 
 export class EnrichedStreamService {
     constructor(
@@ -13,7 +14,7 @@ export class EnrichedStreamService {
             return [];
         }
 
-        const fetchLimit = Math.max(limit, MINIMUM_STREAMS_TO_FETCH);
+        const fetchLimit = Math.min(Math.max(limit, MINIMUM_STREAMS_TO_FETCH), TWITCH_MAX_STREAMS_PER_REQUEST);
         const rawStreams = await this.twitchClient.getRawLiveStreams(fetchLimit);
 
         const sortedStreams = [...rawStreams].sort((a, b) => b.viewerCount - a.viewerCount);

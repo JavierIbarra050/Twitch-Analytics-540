@@ -5,7 +5,7 @@ import axios, { AxiosResponse } from 'axios';
 import { TwitchClient } from "EnrichedStream/Infrastructure/Repositories/TwitchClient";
 import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
 import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
-import { TwitchStreamResponse, TwitchUserResponse } from "EnrichedStream/Infrastructure/TwitchResponses/TwitchResponses";
+import { TwitchStreamResponse, TwitchUserResponse } from "Shared/Infrastructure/Twitch/TwitchApiResponses";
 
 jest.mock('axios');
 const mockedAxios = jest.mocked(axios);
