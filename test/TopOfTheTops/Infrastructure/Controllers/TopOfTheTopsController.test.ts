@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { TopOfTheTopsController } from '../../../../src/TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
 import { TopOfTheTopsService } from '../../../../src/TopOfTheTops/Application/Services/TopOfTheTopsService';
 import { TopOfTheTops } from '../../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
+import { TwitchUnauthorizedError } from '../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 describe('TopOfTheTopsController', () => {
     let controller: TopOfTheTopsController;
@@ -91,6 +92,15 @@ describe('TopOfTheTopsController', () => {
 
         expect(statusMock).toHaveBeenCalledWith(404);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Not Found. No data available." });
+    });
+
+    it('should return 401 Unauthorized when service throws TwitchUnauthorizedError', async () => {
+        serviceMock.getTopOfTheTops.mockRejectedValue(new TwitchUnauthorizedError());
+
+        await controller.getTopOfTheTops(req as Request, res as Response);
+
+        expect(statusMock).toHaveBeenCalledWith(401);
+        expect(jsonMock).toHaveBeenCalledWith({ error: "Unauthorized. Twitch access token is invalid or has expired." });
     });
 
     it('should return 500 Internal Server Error when service throws an exception', async () => {
