@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { StreamerController } from "Streamer/Infrastructure/Controllers/StreamerController";
 import { StreamerService } from "Streamer/Application/Services/StreamerService";
 import { StreamerMother } from "../../Mothers/StreamerMother";
+import { TwitchUnauthorizedError } from "Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
 
 describe("StreamerController", () => {
     let streamerServiceMock: jest.Mocked<StreamerService>;
@@ -92,8 +93,8 @@ describe("StreamerController", () => {
         expect(resMock.json).toHaveBeenCalledWith({ error: "User not found." });
     });
 
-    it("should return 401 status when service throws Unauthorized error", async () => {
-        streamerServiceMock.getStreamerById.mockRejectedValue(new Error("Unauthorized access"));
+    it("should return 401 status when service throws TwitchUnauthorizedError", async () => {
+        streamerServiceMock.getStreamerById.mockRejectedValue(new TwitchUnauthorizedError());
         reqMock.query = { id: "123" };
 
         await streamerController.getStreamerById(reqMock as Request, resMock as Response);

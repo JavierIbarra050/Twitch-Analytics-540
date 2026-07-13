@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { EnrichedStreamController } from '../../../../src/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
 import { EnrichedStreamService } from '../../../../src/EnrichedStream/Application/Services/EnrichedStreamService';
 import { EnrichedStreamMother } from '../../Mothers/EnrichedStreamMother';
+import { TwitchUnauthorizedError } from '../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 describe("EnrichedStreamController", () => {
     let controller: EnrichedStreamController;
@@ -107,10 +108,9 @@ describe("EnrichedStreamController", () => {
         ]);
     });
 
-    it("should return 401 if service throws an unauthorized error", async () => {
+    it("should return 401 if service throws TwitchUnauthorizedError", async () => {
         req.query = { limit: "5" };
-        const unauthorizedError = new Error("Request failed with status code 401");
-        serviceMock.getTopEnrichedStreams.mockRejectedValue(unauthorizedError);
+        serviceMock.getTopEnrichedStreams.mockRejectedValue(new TwitchUnauthorizedError());
 
         await controller.getTopEnrichedStreams(req as Request, res as Response);
 

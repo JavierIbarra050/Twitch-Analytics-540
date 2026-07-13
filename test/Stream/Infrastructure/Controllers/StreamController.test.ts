@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { StreamController } from "Stream/Infrastructure/Controllers/StreamController";
 import { StreamService } from "Stream/Application/Services/StreamService";
 import { StreamMother } from "../../Mothers/StreamMother";
+import { TwitchUnauthorizedError } from "Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
 
 describe("StreamController", () => {
     let streamServiceMock: jest.Mocked<StreamService>;
@@ -44,8 +45,8 @@ describe("StreamController", () => {
         ]);
     });
 
-    it("should return 401 status when service throws Unauthorized error", async () => {
-        streamServiceMock.getLiveStreams.mockRejectedValue(new Error("Unauthorized access"));
+    it("should return 401 status when service throws TwitchUnauthorizedError", async () => {
+        streamServiceMock.getLiveStreams.mockRejectedValue(new TwitchUnauthorizedError());
 
         await streamController.getLiveStreams(reqMock as Request, resMock as Response);
 

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { TwitchTokenResponse } from './TwitchTokenResponse';
 import { Config } from '../Config/config';
+import { TwitchUnauthorizedError } from './TwitchUnauthorizedError';
 
 const TOKEN_EXPIRATION_BUFFER_MS = 60 * 1000;
 
@@ -62,11 +63,20 @@ export class TwitchHttpClient {
         try {
             return await this.executeGet<T>(url, params);
         } catch (error: any) {
-            if (error?.response?.status === 401) {
-                this.invalidateToken();
-                return this.executeGet<T>(url, params);
+            if (error?.response?.status !== 401) {
+                throw error;
             }
-            throw error;
+
+            this.invalidateToken();
+
+            try {
+                return await this.executeGet<T>(url, params);
+            } catch (retryError: any) {
+                if (retryError?.response?.status === 401) {
+                    throw new TwitchUnauthorizedError();
+                }
+                throw retryError;
+            }
         }
     }
 }
