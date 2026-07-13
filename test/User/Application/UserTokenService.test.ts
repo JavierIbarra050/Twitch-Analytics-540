@@ -1,6 +1,7 @@
 import { UserTokenService } from "User/Application/Services/UserTokenService";
 import { IUserRepository } from "User/Domain/Repositories/IUserRepository";
 import { UserMother } from "../Mothers/UserMother";
+import { InvalidCredentialsError } from "User/Domain/Errors/InvalidCredentialsError";
 
 describe("UserTokenService", () => {
     let userRepositoryMock: jest.Mocked<IUserRepository>;
@@ -37,18 +38,18 @@ describe("UserTokenService", () => {
         expect(token.length).toBe(64);
     });
 
-    it("should throw Unauthorized when user does not exist", async () => {
+    it("should throw InvalidCredentialsError when user does not exist", async () => {
         const email = "notfound@example.com";
         const apiKey = "somekey";
 
         userRepositoryMock.findByEmail.mockResolvedValue(null);
 
-        await expect(userTokenService.generateToken(email, apiKey)).rejects.toThrow("Unauthorized");
+        await expect(userTokenService.generateToken(email, apiKey)).rejects.toBeInstanceOf(InvalidCredentialsError);
         expect(userRepositoryMock.findByEmail).toHaveBeenCalledWith(email);
         expect(userRepositoryMock.saveToken).not.toHaveBeenCalled();
     });
 
-    it("should throw Unauthorized when api_key does not match", async () => {
+    it("should throw InvalidCredentialsError when api_key does not match", async () => {
         const email = "test@example.com";
         const correctApiKey = "correctKey";
         const wrongApiKey = "wrongKey";
@@ -56,7 +57,7 @@ describe("UserTokenService", () => {
 
         userRepositoryMock.findByEmail.mockResolvedValue(user);
 
-        await expect(userTokenService.generateToken(email, wrongApiKey)).rejects.toThrow("Unauthorized");
+        await expect(userTokenService.generateToken(email, wrongApiKey)).rejects.toBeInstanceOf(InvalidCredentialsError);
         expect(userRepositoryMock.findByEmail).toHaveBeenCalledWith(email);
         expect(userRepositoryMock.saveToken).not.toHaveBeenCalled();
     });

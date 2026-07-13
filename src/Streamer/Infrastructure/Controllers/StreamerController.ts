@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StreamerService } from "../../Application/Services/StreamerService";
 import { TwitchUnauthorizedError } from "../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
+import { StreamerNotFoundError } from "../../Domain/Errors/StreamerNotFoundError";
 
 export class StreamerController {
     constructor ( 
@@ -33,8 +34,8 @@ export class StreamerController {
                 created_at: streamer.createdAt.toISOString()
             });
             
-        } catch (error: any) {
-            if (error.message && error.message.includes("not found")) {
+        } catch (error) {
+            if (error instanceof StreamerNotFoundError) {
                 res.status(404).json({ error: "User not found." });
                 return;
             }

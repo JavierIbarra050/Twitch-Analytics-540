@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserTokenController } from 'User/Infrastructure/Controllers/UserTokenController';
 import { UserTokenService } from 'User/Application/Services/UserTokenService';
+import { InvalidCredentialsError } from 'User/Domain/Errors/InvalidCredentialsError';
 
 const mockResponse = (): jest.Mocked<Response> => {
     const res = {} as jest.Mocked<Response>;
@@ -69,11 +70,11 @@ describe('UserTokenController', () => {
             expect(userTokenServiceMock.generateToken).not.toHaveBeenCalled();
         });
 
-        it('should return 401 when service throws Unauthorized', async () => {
+        it('should return 401 when service throws InvalidCredentialsError', async () => {
             const req = mockRequest({ email: 'valid@example.com', api_key: 'wrongkey' });
             const res = mockResponse();
 
-            userTokenServiceMock.generateToken.mockRejectedValue(new Error('Unauthorized'));
+            userTokenServiceMock.generateToken.mockRejectedValue(new InvalidCredentialsError());
 
             await userTokenController.generateToken(req, res);
 

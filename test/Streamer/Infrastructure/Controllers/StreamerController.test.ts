@@ -3,6 +3,7 @@ import { StreamerController } from "Streamer/Infrastructure/Controllers/Streamer
 import { StreamerService } from "Streamer/Application/Services/StreamerService";
 import { StreamerMother } from "../../Mothers/StreamerMother";
 import { TwitchUnauthorizedError } from "Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
+import { StreamerNotFoundError } from "Streamer/Domain/Errors/StreamerNotFoundError";
 
 describe("StreamerController", () => {
     let streamerServiceMock: jest.Mocked<StreamerService>;
@@ -84,7 +85,7 @@ describe("StreamerController", () => {
     });
 
     it("should return 404 status when streamer is not found", async () => {
-        streamerServiceMock.getStreamerById.mockRejectedValue(new Error("Streamer not found"));
+        streamerServiceMock.getStreamerById.mockRejectedValue(new StreamerNotFoundError(123));
         reqMock.query = { id: "123" };
 
         await streamerController.getStreamerById(reqMock as Request, resMock as Response);
