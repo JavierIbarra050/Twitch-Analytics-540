@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserTokenService } from '../../Application/Services/UserTokenService';
 import { Email } from '../../Domain/ValueObjects/Email';
+import { InvalidCredentialsError } from '../../Domain/Errors/InvalidCredentialsError';
 
 export class UserTokenController {
     constructor(
@@ -27,8 +28,8 @@ export class UserTokenController {
             const token = await this.userTokenService.generateToken(emailVo.toString(), api_key);
 
             res.status(200).json({ token });
-        } catch (error: any) {
-            if (error.message && error.message.includes('Unauthorized')) {
+        } catch (error) {
+            if (error instanceof InvalidCredentialsError) {
                 res.status(401).json({ error: 'Unauthorized. API access token is invalid.' });
                 return;
             }

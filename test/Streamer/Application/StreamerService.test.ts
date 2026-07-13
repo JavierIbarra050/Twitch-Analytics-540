@@ -1,6 +1,7 @@
 import { StreamerService } from "Streamer/Application/Services/StreamerService";
 import { IStreamerExternalRepository } from "Streamer/Domain/Repositories/IStreamerExternalRepository";
 import { StreamerMother } from "../Mothers/StreamerMother";
+import { StreamerNotFoundError } from "Streamer/Domain/Errors/StreamerNotFoundError";
 
 describe("StreamerService", () => {
     let twitchRepositoryMock: jest.Mocked<IStreamerExternalRepository>;
@@ -22,13 +23,14 @@ describe("StreamerService", () => {
         expect(streamer).toEqual(expectedStreamer);
     });
 
-    it("should throw an error when streamer is not found", async () => {
+    it("should throw a StreamerNotFoundError when streamer is not found", async () => {
         const streamerService = new StreamerService(twitchRepositoryMock);
-        
+
         twitchRepositoryMock.searchStreamerById.mockResolvedValue(null);
 
-        await expect(streamerService.getStreamerById(1234567)).rejects.toThrow(
-            "Streamer with id: 1234567 not found"
-        );
+        const promise = streamerService.getStreamerById(1234567);
+
+        await expect(promise).rejects.toBeInstanceOf(StreamerNotFoundError);
+        await expect(promise).rejects.toThrow("Streamer with id: 1234567 not found");
     });
 });

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { IUserRepository } from '../../Domain/Repositories/IUserRepository';
+import { InvalidCredentialsError } from '../../Domain/Errors/InvalidCredentialsError';
 
 export class UserTokenService {
     constructor(
@@ -11,7 +12,7 @@ export class UserTokenService {
         const user = await this.userRepository.findByEmail(email);
 
         if (!user || user.getUserApiKey() !== apiKey) {
-            throw new Error('Unauthorized');
+            throw new InvalidCredentialsError();
         }
 
         const token = this.generateRandomToken();
