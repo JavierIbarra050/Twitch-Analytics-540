@@ -20,8 +20,15 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 
-# Instala solo dependencias de producción
-RUN npm ci --only=production
+# sqlite3 descarga un binario nativo precompilado que puede no ser compatible
+# con la glibc de esta imagen base; se compila desde el propio toolchain del
+# contenedor para garantizar que funciona en runtime.
+ENV npm_config_build_from_source=true
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 make g++ && \
+    npm ci --only=production && \
+    apt-get purge -y --auto-remove python3 make g++ && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copia el código compilado
 COPY --from=builder /usr/src/app/dist ./dist
