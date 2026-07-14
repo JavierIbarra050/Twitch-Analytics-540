@@ -84,15 +84,15 @@ La versión de producción de la API está desplegada en alwaysdata y conectada 
 
 Puedes interactuar con los endpoints de producción del mismo modo que en local, sustituyendo `http://localhost:3000` por la URL de producción:
 
-1.  **Registro (POST /analytics/register):** Envía tu correo para recibir una API Key.
+1.  **Registro (POST /register):** Envía tu correo para recibir una API Key.
     ```bash
-    curl -X POST https://javieribarra540.alwaysdata.net/analytics/register \
+    curl -X POST https://javieribarra540.alwaysdata.net/register \
          -H "Content-Type: application/json" \
          -d '{"email": "usuario@example.com"}'
     ```
-2.  **Obtención de Token (POST /analytics/token):** Genera tu token de sesión (válido por 3 días).
+2.  **Obtención de Token (POST /token):** Genera tu token de sesión (válido por 3 días).
     ```bash
-    curl -X POST https://javieribarra540.alwaysdata.net/analytics/token \
+    curl -X POST https://javieribarra540.alwaysdata.net/token \
          -H "Content-Type: application/json" \
          -d '{"email": "usuario@example.com", "api_key": "tu_api_key_recibida"}'
     ```

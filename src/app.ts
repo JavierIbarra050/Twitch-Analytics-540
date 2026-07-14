@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/analytics', analyticsRoutes);
-app.use('/analytics', userRoutes);
+app.use(userRoutes);
 
 app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: 'Not Found.' });
