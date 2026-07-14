@@ -66,3 +66,35 @@ jobs:
       - name: Dump container logs
         if: always()
         run: docker logs twitch-analytics-ci || true
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, docker-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Deploy to alwaysdata over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ssh-javieribarra540.alwaysdata.net
+          username: javieribarra540
+          key: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd ~/Twitch-Analytics-540
+            git checkout main
+            git pull origin main
+            JOBS=1 npm install --no-audit --no-fund
+            npm run build
+            # TODO: confirm this is actually how the running process gets restarted
+            # on this alwaysdata site (panel-managed app, touch-file convention,
+            # pm2, etc.) — see PR description for context.
+            touch tmp/restart.txt || true
+
+      - name: Verify the deployed server responds
+        run: |
+          sleep 5
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://javieribarra540.alwaysdata.net/analytics/streams || echo "000")
+          echo "Production responded with status $status"
+          if [ "$status" != "401" ]; then
+            echo "::warning::Production did not respond with the expected 401 after deploy — verify manually."
+          fi
