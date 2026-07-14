@@ -66,3 +66,26 @@ jobs:
       - name: Dump container logs
         if: always()
         run: docker logs twitch-analytics-ci || true
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, docker-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Sync code on alwaysdata over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ssh-javieribarra540.alwaysdata.net
+          username: javieribarra540
+          key: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd ~/Twitch-Analytics-540
+            git checkout main
+            git pull origin main
+            JOBS=1 npm install --no-audit --no-fund
+            npm run build
+
+      - name: Remind to restart manually
+        run: |
+          echo "::notice::Code synced and rebuilt on alwaysdata. Restart the site manually from the alwaysdata panel for changes to go live."
