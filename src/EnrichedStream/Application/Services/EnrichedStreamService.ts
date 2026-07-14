@@ -21,7 +21,7 @@ export class EnrichedStreamService {
         const topStreams = sortedStreams.slice(0, limit);
 
         if (topStreams.length === 0) {
-            return [];
+            return []; 
         }
 
         const userIds = Array.from(new Set(topStreams.map(stream => stream.userId)));
