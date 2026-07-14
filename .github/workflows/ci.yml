@@ -72,7 +72,7 @@ jobs:
     needs: [test, docker-build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Deploy to alwaysdata over SSH
+      - name: Sync code on alwaysdata over SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ssh-javieribarra540.alwaysdata.net
@@ -85,16 +85,7 @@ jobs:
             git pull origin main
             JOBS=1 npm install --no-audit --no-fund
             npm run build
-            # TODO: confirm this is actually how the running process gets restarted
-            # on this alwaysdata site (panel-managed app, touch-file convention,
-            # pm2, etc.) — see PR description for context.
-            touch tmp/restart.txt || true
 
-      - name: Verify the deployed server responds
+      - name: Remind to restart manually
         run: |
-          sleep 5
-          status=$(curl -s -o /dev/null -w "%{http_code}" https://javieribarra540.alwaysdata.net/analytics/streams || echo "000")
-          echo "Production responded with status $status"
-          if [ "$status" != "401" ]; then
-            echo "::warning::Production did not respond with the expected 401 after deploy — verify manually."
-          fi
+          echo "::notice::Code synced and rebuilt on alwaysdata. Restart the site manually from the alwaysdata panel for changes to go live."
