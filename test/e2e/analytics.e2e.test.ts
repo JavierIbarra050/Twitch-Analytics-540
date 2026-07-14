@@ -44,7 +44,7 @@ describe('End-to-End Analytics API Flow', () => {
         const email = 'user@example.com';
 
         const registerRes = await request(app)
-            .post('/analytics/register')
+            .post('/register')
             .send({ email });
 
         expect(registerRes.status).toBe(200);
@@ -52,7 +52,7 @@ describe('End-to-End Analytics API Flow', () => {
         const apiKey = registerRes.body.api_key;
 
         const tokenRes = await request(app)
-            .post('/analytics/token')
+            .post('/token')
             .send({ email, api_key: apiKey });
 
         expect(tokenRes.status).toBe(200);

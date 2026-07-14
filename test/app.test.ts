@@ -14,7 +14,7 @@ describe('app', () => {
 
     it('should return 500 with a JSON error for malformed JSON bodies', async () => {
         const res = await request(app)
-            .post('/analytics/register')
+            .post('/register')
             .set('Content-Type', 'application/json')
             .send('{invalid-json');
 
