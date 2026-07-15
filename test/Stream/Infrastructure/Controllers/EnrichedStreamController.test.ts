@@ -1,23 +1,23 @@
 import { Request, Response } from 'express';
-import { EnrichedStreamController } from '../../../../src/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
-import { EnrichedStreamService } from '../../../../src/EnrichedStream/Application/Services/EnrichedStreamService';
+import { EnrichedStreamController } from "Stream/Infrastructure/Controllers/EnrichedStreamController";
+import { StreamService } from "Stream/Application/Services/StreamService";
 import { EnrichedStreamMother } from '../../Mothers/EnrichedStreamMother';
-import { TwitchUnauthorizedError } from '../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
+import { TwitchUnauthorizedError } from "Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
 
 describe("EnrichedStreamController", () => {
     let controller: EnrichedStreamController;
-    let serviceMock: jest.Mocked<EnrichedStreamService>;
+    let streamServiceMock: jest.Mocked<StreamService>;
     let req: Partial<Request>;
     let res: Partial<Response>;
     let jsonMock: jest.Mock;
     let statusMock: jest.Mock;
 
     beforeEach(() => {
-        serviceMock = {
+        streamServiceMock = {
             getTopEnrichedStreams: jest.fn()
-        } as unknown as jest.Mocked<EnrichedStreamService>;
+        } as unknown as jest.Mocked<StreamService>;
 
-        controller = new EnrichedStreamController(serviceMock);
+        controller = new EnrichedStreamController(streamServiceMock);
 
         jsonMock = jest.fn();
         statusMock = jest.fn().mockReturnValue({ json: jsonMock });
@@ -80,11 +80,11 @@ describe("EnrichedStreamController", () => {
         const stream1 = EnrichedStreamMother.create({ streamId: "1", userId: "user1", userName: "User1", viewerCount: 100, title: "Title 1", userDisplayName: "User1 Display", profileImageUrl: "url1" });
         const stream2 = EnrichedStreamMother.create({ streamId: "2", userId: "user2", userName: "User2", viewerCount: 200, title: "Title 2", userDisplayName: "User2 Display", profileImageUrl: "url2" });
 
-        serviceMock.getTopEnrichedStreams.mockResolvedValue([stream1, stream2]);
+        streamServiceMock.getTopEnrichedStreams.mockResolvedValue([stream1, stream2]);
 
         await controller.getTopEnrichedStreams(req as Request, res as Response);
 
-        expect(serviceMock.getTopEnrichedStreams).toHaveBeenCalledWith(2);
+        expect(streamServiceMock.getTopEnrichedStreams).toHaveBeenCalledWith(2);
         expect(statusMock).toHaveBeenCalledWith(200);
         expect(jsonMock).toHaveBeenCalledWith([
             {
@@ -110,7 +110,7 @@ describe("EnrichedStreamController", () => {
 
     it("should return 401 if service throws TwitchUnauthorizedError", async () => {
         req.query = { limit: "5" };
-        serviceMock.getTopEnrichedStreams.mockRejectedValue(new TwitchUnauthorizedError());
+        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(new TwitchUnauthorizedError());
 
         await controller.getTopEnrichedStreams(req as Request, res as Response);
 
@@ -120,7 +120,7 @@ describe("EnrichedStreamController", () => {
 
     it("should return 500 on unexpected errors", async () => {
         req.query = { limit: "5" };
-        serviceMock.getTopEnrichedStreams.mockRejectedValue(new Error("Database breakdown"));
+        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(new Error("Database breakdown"));
 
         await controller.getTopEnrichedStreams(req as Request, res as Response);
 

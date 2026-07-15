@@ -1,294 +1,332 @@
-# Twitch Analytics API - Guía de Utilización
+# Twitch Analytics API
 
-Esta guía explica detalladamente cómo configurar, ejecutar, probar e interactuar con los endpoints de la API de Twitch Analytics.
+API REST en Node.js y TypeScript que expone datos de Twitch (streamers, streams en vivo y estadísticas agregadas de los juegos más vistos) a través de un sistema propio de registro y autenticación. El servidor actúa como intermediario entre el cliente y la API oficial de Twitch: gestiona el token de aplicación de Twitch internamente, cachea resultados costosos en base de datos y expone endpoints propios protegidos con un token de sesión.
 
 ---
 
-## Configuración Inicial
+## Índice
 
-### Requisitos Previos
-*   Node.js: Versión 16.x o superior.
-*   npm (incluido con Node.js).
+1. [Qué hace el proyecto](#qué-hace-el-proyecto)
+2. [Stack técnico](#stack-técnico)
+3. [Arquitectura](#arquitectura)
+4. [Estructura de carpetas](#estructura-de-carpetas)
+5. [Configuración inicial](#configuración-inicial)
+6. [Ejecución del proyecto](#ejecución-del-proyecto)
+7. [Base de datos](#base-de-datos)
+8. [Sistema de autenticación](#sistema-de-autenticación)
+9. [Endpoints de la API](#endpoints-de-la-api)
+10. [Tests](#tests)
+11. [Entorno de producción](#entorno-de-producción)
 
-### 1. Instalación de Dependencias
-Ejecuta el siguiente comando en la raíz del proyecto para instalar todos los paquetes necesarios:
+---
+
+## Qué hace el proyecto
+
+El proyecto resuelve un problema concreto: la API pública de Twitch (Helix) exige gestionar un token de aplicación (client credentials), combinar varias llamadas para enriquecer datos, y no ofrece agregados como "los streams más vistos por juego". Esta API hace ese trabajo una sola vez en el servidor y lo expone de forma simplificada:
+
+- Consulta de información de un streamer por su ID de Twitch.
+- Listado de streams en vivo en la plataforma.
+- Listado de streams en vivo enriquecido con datos del canal (foto de perfil, nombre para mostrar) y ordenado por espectadores.
+- Ranking agregado de los vídeos más vistos de los tres juegos más populares del momento, con resultados cacheados en base de datos para no golpear la API de Twitch en cada petición.
+
+Para usar la API hay que registrarse con un email (se obtiene una API key) y luego canjear esa API key por un token de sesión temporal, que es el que se usa en el resto de peticiones.
+
+## Stack técnico
+
+- **Node.js** + **TypeScript**, ejecutado con `ts-node-dev` en desarrollo y compilado con `tsc` para producción.
+- **Express 5** como framework HTTP.
+- **axios** para las llamadas a la API de Twitch.
+- **mysql2** y **sqlite3/sqlite** como drivers de base de datos, seleccionados automáticamente según la configuración (ver [Base de datos](#base-de-datos)).
+- **Jest** + **ts-jest** + **supertest** para tests unitarios, de integración y end-to-end.
+- **Docker** / **docker compose** para empaquetar y desplegar la aplicación.
+
+## Arquitectura
+
+El código sigue un enfoque por dominios inspirado en Domain-Driven Design, con cada funcionalidad de negocio organizada como un módulo independiente bajo `src/`. Cada módulo repite la misma división en tres capas:
+
+- **Domain**: entidades, value objects, interfaces de repositorio y errores propios del dominio. No depende de Express, de axios ni de ninguna librería externa.
+- **Application**: casos de uso (services) que orquestan el dominio. Reciben sus dependencias por constructor (inyección manual), lo que permite testearlos sustituyendo los repositorios por dobles de test.
+- **Infrastructure**: todo lo que conecta el dominio con el mundo exterior — controladores Express, repositorios concretos que llaman a la API de Twitch o a la base de datos, rutas y middlewares.
+
+Los módulos de negocio son: `User` (registro y tokens), `Streamer`, `Stream` y `TopOfTheTops`. `Stream` cubre tanto el listado simple de streams en vivo como su variante enriquecida con datos de perfil: no son dos contextos de negocio distintos, son dos niveles de detalle sobre el mismo dato, así que comparten repositorio (`IStreamRepository`) y servicio de aplicación (`StreamService`), y solo se separan en la capa de Infrastructure (`StreamController` y `EnrichedStreamController`), porque cada endpoint tiene su propio contrato HTTP. Las entidades `Stream` y `EnrichedStream` son independientes por composición, no por herencia: `EnrichedStream` no extiende de `Stream`, simplemente incluye sus propios campos aunque dos de ellos (`title`, `userName`) coincidan. Además existe un módulo `Shared` con la configuración, la conexión a base de datos, el cliente HTTP de Twitch y el middleware de autenticación, usados de forma transversal por el resto de módulos.
+
+No se usa ningún framework de inyección de dependencias: `src/Shared/Infrastructure/container.ts` construye a mano todas las instancias (repositorios, servicios, controladores) y las expone como constantes. Las rutas importan esas instancias ya construidas en lugar de crearlas ellas mismas. Esto hace explícito el grafo de dependencias del proyecto con solo leer un archivo.
+
+El punto de entrada (`src/index.ts`) inicializa la base de datos (crea las tablas si no existen) y, solo si eso tiene éxito, levanta el servidor Express definido en `src/app.ts`.
+
+## Estructura de carpetas
+
+```
+src/
+  app.ts                    Configuración de Express: middlewares globales, montaje de rutas, 404 y manejador de errores
+  index.ts                  Punto de entrada: inicializa la base de datos y arranca el servidor
+
+  Shared/Infrastructure/
+    Config/config.ts        Lectura y validación de variables de entorno
+    Database/database.ts    Adaptador de base de datos (SQLite / MySQL) y creación de tablas
+    Twitch/                 Cliente HTTP hacia la API de Twitch y manejo del token de aplicación
+    Middlewares/            Middleware de autenticación por Bearer token
+    container.ts            Construcción manual de todas las dependencias de la aplicación
+
+  User/                     Registro de usuarios, generación de API keys y de tokens de sesión
+  Streamer/                 Consulta de información de un streamer concreto
+  Stream/                   Streams en vivo: listado simple y variante enriquecida con datos de perfil, ordenados por audiencia
+  TopOfTheTops/             Ranking agregado de los vídeos más vistos por juego, con cache en base de datos
+
+test/                       Tests organizados en la misma estructura que src/, más un directorio e2e/
+data/                       Directorio persistente para el fichero de base de datos SQLite en local/Docker
+postman/                    Colección de Postman con pruebas para todos los endpoints
+```
+
+## Configuración inicial
+
+### Requisitos previos
+
+- Node.js 16 o superior.
+- npm (se instala junto con Node.js).
+- Una aplicación registrada en la [consola de desarrolladores de Twitch](https://dev.twitch.tv/console) para obtener `TWITCH_CLIENT_ID` y `TWITCH_CLIENT_SECRET`.
+
+### Instalación de dependencias
+
 ```bash
 npm install
 ```
 
-### 2. Variables de Entorno (.env)
-Crea un archivo llamado .env en la raíz del proyecto y añade tus credenciales de la consola de desarrolladores de Twitch:
+### Variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto. Las variables relacionadas con Twitch son obligatorias; el resto tienen valores por defecto sensatos para desarrollo local.
+
 ```env
-PORT=3000
+# Obligatorias
 TWITCH_CLIENT_ID=tu_twitch_client_id
 TWITCH_CLIENT_SECRET=tu_twitch_client_secret
+
+# Opcionales
+PORT=3000                      # Puerto donde escucha el servidor (por defecto 3000)
+TOKEN_EXPIRATION_DAYS=3        # Días de validez del token de sesión (por defecto 3)
+DATABASE_PATH=./database.sqlite # Ruta del fichero SQLite si no se usa MySQL
+
+# Solo si se quiere usar MySQL en lugar de SQLite (ver sección Base de datos)
+DB_HOST=
+DB_PORT=3306
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
 ```
 
----
+Si no se define `DB_HOST`, la aplicación usa SQLite de forma automática y no hace falta configurar nada más.
 
-## Ejecución del Proyecto
+## Ejecución del proyecto
 
-### Modo Desarrollo
-Para iniciar el servidor con recarga automática al guardar cambios en el código:
+### Modo desarrollo
+
+Arranca el servidor con recarga automática al guardar cambios en el código:
+
 ```bash
 npm run dev
 ```
-El servidor estará escuchando de forma predeterminada en http://localhost:3000.
 
-### Modo Producción
-Para compilar el código TypeScript a JavaScript nativo e iniciar el servidor en producción:
+El servidor queda escuchando en `http://localhost:3000` (o en el puerto indicado por `PORT`).
+
+### Modo producción
+
+Compila TypeScript a JavaScript y ejecuta el resultado:
+
 ```bash
 npm run build
 npm start
 ```
 
-### Ejecución con Docker
-Para compilar y ejecutar la aplicación dentro de contenedores de Docker utilizando Docker Compose:
+### Con Docker
 
-1. **Configurar Variables de Entorno:** Asegúrate de tener el archivo `.env` configurado en la raíz del proyecto con tus credenciales de Twitch.
-2. **Levantar los contenedores:** Compila la imagen e inicia la aplicación en segundo plano (modo *detached*):
+1. Asegúrate de tener el `.env` configurado en la raíz del proyecto.
+2. Compila la imagen y levanta el contenedor en segundo plano:
    ```bash
    docker compose up --build -d
    ```
-3. **Verificar el estado:** Comprueba que el contenedor esté corriendo correctamente:
+3. Comprueba el estado del contenedor:
    ```bash
    docker compose ps
    ```
-4. **Ver los logs:** Puedes monitorizar la salida de la consola en tiempo real ejecutando:
+4. Consulta los logs en tiempo real:
    ```bash
    docker compose logs -f
    ```
-5. **Acceso a la API:** El servidor estará escuchando en `http://localhost:3000` (o el puerto que hayas configurado bajo la variable `PORT` en tu `.env`).
-6. **Persistencia de Datos:** Los datos de la base de datos SQLite se guardarán de forma persistente en el directorio local `./data` de tu máquina.
+5. La API queda accesible en `http://localhost:3000` (o el puerto configurado en `PORT`).
+6. Si se usa SQLite, el fichero de base de datos se guarda en el directorio `./data`, montado como volumen para que los datos sobrevivan a reinicios del contenedor.
 
-Para detener y remover los contenedores:
+Para detener y eliminar el contenedor:
+
 ```bash
 docker compose down
 ```
 
-### Ejecutar Pruebas (Tests)
-Para ejecutar la suite completa de pruebas unitarias e integración con Jest:
-```bash
-npm test
-```
+## Base de datos
 
----
+El proyecto soporta dos motores de base de datos a través de un mismo adaptador (`IDatabase`), definido en `src/Shared/Infrastructure/Database/database.ts`:
 
-## Entorno de Producción (alwaysdata)
+- **SQLite**, usado por defecto cuando no hay variables `DB_*` configuradas. Es la opción pensada para desarrollo local y para el despliegue con Docker Compose sin dependencias externas.
+- **MySQL**, usado automáticamente en cuanto se define `DB_HOST` en el entorno. Pensado para el despliegue en producción contra una base de datos gestionada.
 
-La versión de producción de la API está desplegada en alwaysdata y conectada a una base de datos MySQL en la nube.
+La elección del motor ocurre una única vez, al resolver la primera conexión (`DatabaseConnection`, patrón singleton), por lo que toda la aplicación comparte el mismo adaptador durante su ciclo de vida. Al arrancar, `initializeDatabase()` crea (si no existen) las tablas necesarias con la sintaxis correspondiente al motor activo:
 
-*   **URL Base de Producción:** `https://javieribarra540.alwaysdata.net/analytics`
+- `users`: email y API key de cada usuario registrado.
+- `user_tokens`: tokens de sesión emitidos, con su fecha de expiración.
+- `game_cache`: cache de los resultados del endpoint `topsofthetops`, para evitar recalcularlos en cada petición.
 
-### Cómo probar la API en producción
+## Sistema de autenticación
 
-Puedes interactuar con los endpoints de producción del mismo modo que en local, sustituyendo `http://localhost:3000` por la URL de producción:
+Todos los endpoints bajo `/analytics` requieren un token de sesión enviado en la cabecera `Authorization`.
 
-1.  **Registro (POST /register):** Envía tu correo para recibir una API Key.
-    ```bash
-    curl -X POST https://javieribarra540.alwaysdata.net/register \
-         -H "Content-Type: application/json" \
-         -d '{"email": "usuario@example.com"}'
-    ```
-2.  **Obtención de Token (POST /token):** Genera tu token de sesión (válido por 3 días).
-    ```bash
-    curl -X POST https://javieribarra540.alwaysdata.net/token \
-         -H "Content-Type: application/json" \
-         -d '{"email": "usuario@example.com", "api_key": "tu_api_key_recibida"}'
-    ```
-3.  **Consultas Protegidas:** Usa el token en la cabecera `Authorization`.
-    ```bash
-    curl -X GET "https://javieribarra540.alwaysdata.net/analytics/streams/enriched?limit=3" \
-         -H "Authorization: Bearer tu_token_de_sesión"
-    ```
-
----
-
-## Sistema de Autenticación
-
-Todos los endpoints bajo `/analytics` requieren un token de sesión temporal válido enviado en la cabecera Authorization. Los endpoints marcados como Premium, además, ofrecen funcionalidad adicional (enriquecimiento de datos y caché) reservada a este sistema de autenticación.
-
-### Formato de la Cabecera
 ```http
 Authorization: Bearer <token_de_sesión>
 ```
 
-#### Flujo de Obtención de Credenciales:
-1.  **Registro (POST /register):** Envía tu correo para recibir una API Key.
-    *   Body (JSON): `{"email": "usuario@example.com"}`
-    *   Response (200 OK): `{"api_key": "abcd1234efgh5678"}`
-2.  **Obtención de Token (POST /token):** Genera un token de acceso temporal con validez de 3 días.
-    *   Body (JSON): `{"email": "usuario@example.com", "api_key": "abcd1234efgh5678"}`
-    *   Response (200 OK): `{"token": "generated_token"}`
+El flujo para obtener credenciales es en dos pasos:
 
-*Nota: El backend procesa las solicitudes autenticadas mediante un middleware que valida los tokens directamente en la base de datos SQLite local.*
+1. **Registro** — `POST /register` con el email. Devuelve una `api_key` asociada a ese email (si el email ya existía, se genera una nueva API key para él).
+2. **Generación de token** — `POST /token` con el email y la `api_key` obtenida en el paso anterior. Devuelve un token de sesión válido durante `TOKEN_EXPIRATION_DAYS` días (3 por defecto).
 
----
+El token se valida en cada petición contra la base de datos a través de `AuthMiddleware`, comprobando que existe y que no ha superado su fecha de expiración.
 
 ## Endpoints de la API
 
-### 1. Consultar Información de un Streamer
-Obtiene información detallada de un canal o creador de contenido mediante su ID único de Twitch.
+### POST /register
 
-*   **Método:** GET
-*   **Ruta:** /analytics/streamer
-*   **Autenticación requerida:** Sí (Bearer Token)
-*   **Query Params:**
-    *   id (numérico, obligatorio): ID del streamer en Twitch.
-*   **Ejemplo de Petición:**
-    ```bash
-    curl -X GET "http://localhost:3000/analytics/streamer?id=83232866" \
-         -H "Authorization: Bearer generated_token"
-    ```
-*   **Respuestas:**
-    *   **200 OK:**
-        ```json
-        {
-          "id": "83232866",
-          "login": "ibai",
-          "display_name": "Ibai",
-          "type": "",
-          "broadcaster_type": "partner",
-          "description": "Streamer de Twitch e influenciador...",
-          "profile_image_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/...",
-          "offline_image_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/...",
-          "view_count": 0,
-          "created_at": "2015-02-20T16:47:56Z"
-        }
-        ```
-    *   **400 Bad Request (Parámetro inválido o ausente):**
-        ```json
-        { "error": "Invalid or missing 'id' parameter." }
-        ```
-    *   **401 Unauthorized (Token de sesión inválido, expirado o ausente):**
-        ```json
-        { "error": "Unauthorized. Token is invalid or expired." }
-        ```
-    *   **401 Unauthorized (Token de acceso de Twitch inválido):**
-        ```json
-        { "error": "Unauthorized. Twitch access token is invalid or has expired." }
-        ```
-    *   **404 Not Found (Streamer no encontrado):**
-        ```json
-        { "error": "User not found." }
-        ```
+Registra un email y devuelve su API key.
 
----
+- **Autenticación:** no requiere.
+- **Body:** `{ "email": "usuario@example.com" }`
+- **200 OK:** `{ "api_key": "abcd1234efgh5678" }`
+- **400 Bad Request:** email ausente o con formato inválido, por ejemplo `{ "error": "The email is mandatory" }`.
 
-### 2. Consultar Streams en Vivo
-Obtiene un listado simple de las emisiones en vivo que están activas actualmente en la plataforma.
+### POST /token
 
-*   **Método:** GET
-*   **Ruta:** /analytics/streams
-*   **Autenticación requerida:** Sí (Bearer Token)
-*   **Ejemplo de Petición:**
-    ```bash
-    curl -X GET "http://localhost:3000/analytics/streams" \
-         -H "Authorization: Bearer generated_token"
-    ```
-*   **Respuestas:**
-    *   **200 OK:**
-        ```json
-        [
-          {
-            "title": "TORNEO VALORANT CON LA COMUNIDAD",
-            "user_name": "ValorantStreamer"
-          },
-          {
-            "title": "Charlando de futbol y musica",
-            "user_name": "ChattingHost"
-          }
-        ]
-        ```
-    *   **401 Unauthorized (Token de sesión inválido, expirado o ausente):**
-        ```json
-        { "error": "Unauthorized. Token is invalid or expired." }
-        ```
-    *   **401 Unauthorized (Token de acceso de Twitch inválido):**
-        ```json
-        { "error": "Unauthorized. Twitch access token is invalid or has expired." }
-        ```
+Canjea una API key por un token de sesión.
 
----
+- **Autenticación:** no requiere.
+- **Body:** `{ "email": "usuario@example.com", "api_key": "abcd1234efgh5678" }`
+- **200 OK:** `{ "token": "generated_token" }`
+- **400 Bad Request:** falta el email o la `api_key`.
+- **401 Unauthorized:** la combinación de email y API key no es válida.
 
-### 3. Top Streams Enriquecidos (Premium)
-Obtiene una lista de streams en vivo ordenada por cantidad de espectadores, enriquecida con información del canal del streamer (nombre y foto de perfil).
+### GET /analytics/streamer
 
-*   **Método:** GET
-*   **Ruta:** /analytics/streams/enriched
-*   **Autenticación requerida:** Sí (Bearer Token)
-*   **Query Params:**
-    *   limit (entero, obligatorio): Número máximo de elementos a devolver.
-*   **Ejemplo de Petición:**
-    ```bash
-    curl -X GET "http://localhost:3000/analytics/streams/enriched?limit=3" \
-         -H "Authorization: Bearer generated_token"
-    ```
-*   **Respuestas:**
-    *   **200 OK:**
-        ```json
-        [
-          {
-            "stream_id": "987654321",
-            "user_id": "111111111",
-            "user_name": "TopStreamer1",
-            "viewer_count": 34567,
-            "title": "Epic Gaming Session",
-            "user_display_name": "TopStreamer1",
-            "profile_image_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/topstreamer1-profile_image.png"
-          }
-        ]
-        ```
-    *   **400 Bad Request (Límite no especificado o inválido):**
-        ```json
-        { "error": "Invalid 'limit' parameter." }
-        ```
-    *   **401 Unauthorized (Token inválido o expirado):**
-        ```json
-        { "error": "Unauthorized. Token is invalid or expired." }
-        ```
+Información detallada de un canal de Twitch por su ID.
 
----
+- **Autenticación:** Bearer token.
+- **Query params:** `id` (numérico, obligatorio).
+- **Ejemplo:**
+  ```bash
+  curl "http://localhost:3000/analytics/streamer?id=141981764" \
+       -H "Authorization: Bearer <token>"
+  ```
+- **200 OK:**
+  ```json
+  {
+    "id": "141981764",
+    "login": "twitchdev",
+    "display_name": "TwitchDev",
+    "type": "",
+    "broadcaster_type": "partner",
+    "description": "...",
+    "profile_image_url": "https://static-cdn.jtvnw.net/...",
+    "offline_image_url": "https://static-cdn.jtvnw.net/...",
+    "view_count": 0,
+    "created_at": "2016-12-14T20:32:28.000Z"
+  }
+  ```
+- **400 Bad Request:** `id` ausente o no numérico.
+- **401 Unauthorized:** token de sesión inválido o token de aplicación de Twitch inválido.
+- **404 Not Found:** no existe ningún streamer con ese ID.
 
-### 4. Top of the Tops (Premium + Cache)
-Obtiene métricas sobre los 40 videos más visualizados de cada uno de los tres juegos más populares de Twitch.
+### GET /analytics/streams
 
-*   **Método:** GET
-*   **Ruta:** /analytics/topsofthetops
-*   **Autenticación requerida:** Sí (Bearer Token)
-*   **Query Params:**
-    *   since (entero, opcional): Tiempo máximo en segundos para forzar la actualización de la caché (por defecto, utiliza una caché de 10 minutos guardada en la base de datos SQLite).
-*   **Ejemplo de Petición:**
-    ```bash
-    curl -X GET "http://localhost:3000/analytics/topsofthetops?since=600" \
-         -H "Authorization: Bearer generated_token"
-    ```
-*   **Respuestas:**
-    *   **200 OK:**
-        ```json
-        [
-          {
-            "game_id": "509658",
-            "game_name": "Just Chatting",
-            "user_name": "LCK",
-            "total_videos": "4",
-            "total_views": "1000000000",
-            "most_viewed_title": "DK vs T1 | 2021 LCK Summer FINALS",
-            "most_viewed_views": "5550000",
-            "most_viewed_duration": "5h52m8s",
-            "most_viewed_created_at": "2015-02-20T16:47:56Z"
-          }
-        ]
-        ```
-    *   **400 Bad Request (Parámetro since inválido):**
-        ```json
-        { "error": "Bad Request. Invalid or missing parameters." }
-        ```
-    *   **401 Unauthorized:**
-        ```json
-        { "error": "Unauthorized. Token is invalid or expired." }
-        ```
-    *   **404 Not Found (Caché vacía o datos no encontrados):**
-        ```json
-        { "error": "Not Found. No data available." }
-        ```
+Listado simple de streams en vivo en Twitch en este momento.
+
+- **Autenticación:** Bearer token.
+- **Ejemplo:**
+  ```bash
+  curl "http://localhost:3000/analytics/streams" \
+       -H "Authorization: Bearer <token>"
+  ```
+- **200 OK:**
+  ```json
+  [
+    { "title": "TORNEO VALORANT CON LA COMUNIDAD", "user_name": "ValorantStreamer" },
+    { "title": "Charlando de futbol y musica", "user_name": "ChattingHost" }
+  ]
+  ```
+- **401 Unauthorized:** token de sesión inválido o token de Twitch inválido.
+
+### GET /analytics/streams/enriched
+
+Streams en vivo ordenados por número de espectadores, enriquecidos con datos del canal (nombre para mostrar y foto de perfil).
+
+- **Autenticación:** Bearer token.
+- **Query params:** `limit` (entero positivo, obligatorio) — número máximo de resultados.
+- **Ejemplo:**
+  ```bash
+  curl "http://localhost:3000/analytics/streams/enriched?limit=5" \
+       -H "Authorization: Bearer <token>"
+  ```
+- **200 OK:**
+  ```json
+  [
+    {
+      "stream_id": "987654321",
+      "user_id": "111111111",
+      "user_name": "TopStreamer1",
+      "viewer_count": 34567,
+      "title": "Epic Gaming Session",
+      "user_display_name": "TopStreamer1",
+      "profile_image_url": "https://static-cdn.jtvnw.net/..."
+    }
+  ]
+  ```
+- **400 Bad Request:** `limit` ausente, no numérico o menor o igual que cero.
+- **401 Unauthorized:** token de sesión inválido o token de Twitch inválido.
+
+### GET /analytics/topsofthetops
+
+Métricas agregadas sobre los vídeos más vistos de los tres juegos más populares de Twitch en este momento. El resultado se cachea en base de datos para no recalcularlo en cada petición.
+
+- **Autenticación:** Bearer token.
+- **Ejemplo:**
+  ```bash
+  curl "http://localhost:3000/analytics/topsofthetops" \
+       -H "Authorization: Bearer <token>"
+  ```
+- **200 OK:**
+  ```json
+  [
+    {
+      "game_id": "509658",
+      "game_name": "Just Chatting",
+      "user_name": "LCK",
+      "total_videos": "4",
+      "total_views": "1000000000",
+      "most_viewed_title": "DK vs T1 | 2021 LCK Summer FINALS",
+      "most_viewed_views": "5550000",
+      "most_viewed_duration": "5h52m8s",
+      "most_viewed_created_at": "2015-02-20T16:47:56Z"
+    }
+  ]
+  ```
+- **401 Unauthorized:** token de sesión inválido.
+
+## Tests
+
+La suite cubre entidades de dominio, value objects, servicios de aplicación, controladores y repositorios de cada módulo, además de un test end-to-end (`test/e2e/analytics.e2e.test.ts`) que ejercita la aplicación completa con supertest.
+
+```bash
+npm test
+```
+
+## Entorno de producción
+
+La API está desplegada en alwaysdata, conectada a una base de datos MySQL en la nube.
+
+- **URL base:** `https://javieribarra540.alwaysdata.net`
+
+El uso en producción es idéntico al uso en local: primero `/register`, después `/token`, y con ese token se consultan los endpoints bajo `/analytics`, sustituyendo `http://localhost:3000` por la URL de producción.
