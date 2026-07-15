@@ -1,13 +1,12 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { StreamService } from '../../Application/Services/StreamService';
-import { TwitchUnauthorizedError } from '../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 export class EnrichedStreamController {
     constructor(
         private readonly streamService: StreamService
     ) {}
 
-    public getTopEnrichedStreams = async (req: Request, res: Response): Promise<void> => {
+    public getTopEnrichedStreams = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const limitParam = req.query.limit;
 
@@ -37,12 +36,7 @@ export class EnrichedStreamController {
 
             res.status(200).json(response);
         } catch (error) {
-            if (error instanceof TwitchUnauthorizedError) {
-                res.status(401).json({ error: "Unauthorized. Twitch access token is invalid or has expired." });
-                return;
-            }
-
-            res.status(500).json({ error: "Internal server error." });
+            next(error);
         }
     };
 }

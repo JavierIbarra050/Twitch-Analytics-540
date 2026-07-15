@@ -1,14 +1,13 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { UserTokenService } from '../../Application/Services/UserTokenService';
 import { Email } from '../../Domain/ValueObjects/Email';
-import { InvalidCredentialsError } from '../../Domain/Errors/InvalidCredentialsError';
 
 export class UserTokenController {
     constructor(
         private readonly userTokenService: UserTokenService,
     ) {}
 
-    public generateToken = async (req: Request, res: Response): Promise<void> => {
+    public generateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const api_key = req.body?.api_key;
 
@@ -29,12 +28,7 @@ export class UserTokenController {
 
             res.status(200).json({ token });
         } catch (error) {
-            if (error instanceof InvalidCredentialsError) {
-                res.status(401).json({ error: 'Unauthorized. API access token is invalid.' });
-                return;
-            }
-
-            res.status(500).json({ error: 'Internal server error.' });
+            next(error);
         }
     };
 }

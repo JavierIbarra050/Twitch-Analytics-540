@@ -13,6 +13,8 @@ const mockResponse = (): jest.Mocked<Response> => {
 const mockRequest = (body: Record<string, unknown> = {}): Request =>
     ({ body } as Request);
 
+const mockNext = (): jest.Mock => jest.fn();
+
 describe('UserTokenController', () => {
     let userTokenServiceMock: jest.Mocked<UserTokenService>;
     let userTokenController: UserTokenController;
@@ -29,8 +31,9 @@ describe('UserTokenController', () => {
         it('should return 400 when email is missing', async () => {
             const req = mockRequest({ api_key: 'someapikey123' });
             const res = mockResponse();
+            const next = mockNext();
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ error: 'The email is mandatory' });
@@ -40,8 +43,9 @@ describe('UserTokenController', () => {
         it('should return 400 when body is undefined', async () => {
             const req = { body: undefined } as unknown as Request;
             const res = mockResponse();
+            const next = mockNext();
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ error: 'The email is mandatory' });
@@ -51,8 +55,9 @@ describe('UserTokenController', () => {
         it('should return 400 when email format is invalid', async () => {
             const req = mockRequest({ email: 'not-a-valid-email', api_key: 'someapikey123' });
             const res = mockResponse();
+            const next = mockNext();
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ error: 'The email must be a valid email address' });
@@ -62,24 +67,27 @@ describe('UserTokenController', () => {
         it('should return 400 when api_key is missing', async () => {
             const req = mockRequest({ email: 'valid@example.com' });
             const res = mockResponse();
+            const next = mockNext();
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ error: 'The api_key is mandatory' });
             expect(userTokenServiceMock.generateToken).not.toHaveBeenCalled();
         });
 
-        it('should return 401 when service throws InvalidCredentialsError', async () => {
+        it('should call next with InvalidCredentialsError when service throws it', async () => {
             const req = mockRequest({ email: 'valid@example.com', api_key: 'wrongkey' });
             const res = mockResponse();
+            const next = mockNext();
+            const credentialsError = new InvalidCredentialsError();
 
-            userTokenServiceMock.generateToken.mockRejectedValue(new InvalidCredentialsError());
+            userTokenServiceMock.generateToken.mockRejectedValue(credentialsError);
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized. API access token is invalid.' });
+            expect(next).toHaveBeenCalledWith(credentialsError);
+            expect(res.status).not.toHaveBeenCalled();
         });
 
         it('should return 200 with token on success', async () => {
@@ -91,24 +99,27 @@ describe('UserTokenController', () => {
 
             const req = mockRequest({ email, api_key });
             const res = mockResponse();
+            const next = mockNext();
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
             expect(userTokenServiceMock.generateToken).toHaveBeenCalledWith(email, api_key);
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({ token });
         });
 
-        it('should return 500 on unexpected service error', async () => {
+        it('should call next on unexpected service error', async () => {
             const req = mockRequest({ email: 'valid@example.com', api_key: 'someapikey123' });
             const res = mockResponse();
+            const next = mockNext();
+            const unexpectedError = new Error('Database connection lost');
 
-            userTokenServiceMock.generateToken.mockRejectedValue(new Error('Database connection lost'));
+            userTokenServiceMock.generateToken.mockRejectedValue(unexpectedError);
 
-            await userTokenController.generateToken(req, res);
+            await userTokenController.generateToken(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Internal server error.' });
+            expect(next).toHaveBeenCalledWith(unexpectedError);
+            expect(res.status).not.toHaveBeenCalled();
         });
     });
 });

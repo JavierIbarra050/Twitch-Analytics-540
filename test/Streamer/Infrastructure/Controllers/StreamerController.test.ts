@@ -10,6 +10,7 @@ describe("StreamerController", () => {
     let streamerController: StreamerController;
     let reqMock: Partial<Request>;
     let resMock: Partial<Response>;
+    let nextMock: jest.Mock;
 
     beforeEach(() => {
         streamerServiceMock = {
@@ -26,6 +27,8 @@ describe("StreamerController", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         };
+
+        nextMock = jest.fn();
     });
 
     it("should return streamer details and 200 status when streamer is found", async () => {
@@ -39,7 +42,7 @@ describe("StreamerController", () => {
         streamerServiceMock.getStreamerById.mockResolvedValue(expectedStreamer);
         reqMock.query = { id: "83232866" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
         expect(streamerServiceMock.getStreamerById).toHaveBeenCalledWith(83232866);
         expect(resMock.status).toHaveBeenCalledWith(200);
@@ -60,7 +63,7 @@ describe("StreamerController", () => {
     it("should return 400 status when 'id' query parameter is invalid symbol", async () => {
         reqMock.query = { id: Symbol("invalid") as any };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
         expect(resMock.status).toHaveBeenCalledWith(400);
         expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'id' parameter." });
@@ -69,7 +72,7 @@ describe("StreamerController", () => {
     it("should return 400 status when 'id' contains decimal parts", async () => {
         reqMock.query = { id: "12.34" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
         expect(resMock.status).toHaveBeenCalledWith(400);
         expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'id' parameter." });
@@ -78,39 +81,42 @@ describe("StreamerController", () => {
     it("should return 400 status when 'id' contains trailing non-numeric characters", async () => {
         reqMock.query = { id: "12abc" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
         expect(resMock.status).toHaveBeenCalledWith(400);
         expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid or missing 'id' parameter." });
     });
 
-    it("should return 404 status when streamer is not found", async () => {
-        streamerServiceMock.getStreamerById.mockRejectedValue(new StreamerNotFoundError(123));
+    it("should call next with StreamerNotFoundError when streamer is not found", async () => {
+        const notFoundError = new StreamerNotFoundError(123);
+        streamerServiceMock.getStreamerById.mockRejectedValue(notFoundError);
         reqMock.query = { id: "123" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
-        expect(resMock.status).toHaveBeenCalledWith(404);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "User not found." });
+        expect(nextMock).toHaveBeenCalledWith(notFoundError);
+        expect(resMock.status).not.toHaveBeenCalled();
     });
 
-    it("should return 401 status when service throws TwitchUnauthorizedError", async () => {
-        streamerServiceMock.getStreamerById.mockRejectedValue(new TwitchUnauthorizedError());
+    it("should call next with TwitchUnauthorizedError when service throws it", async () => {
+        const twitchError = new TwitchUnauthorizedError();
+        streamerServiceMock.getStreamerById.mockRejectedValue(twitchError);
         reqMock.query = { id: "123" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
-        expect(resMock.status).toHaveBeenCalledWith(401);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "Unauthorized. Twitch access token is invalid or has expired." });
+        expect(nextMock).toHaveBeenCalledWith(twitchError);
+        expect(resMock.status).not.toHaveBeenCalled();
     });
 
-    it("should return 500 status when an unexpected error occurs", async () => {
-        streamerServiceMock.getStreamerById.mockRejectedValue(new Error("Unexpected DB error"));
+    it("should call next when an unexpected error occurs", async () => {
+        const unexpectedError = new Error("Unexpected DB error");
+        streamerServiceMock.getStreamerById.mockRejectedValue(unexpectedError);
         reqMock.query = { id: "123" };
 
-        await streamerController.getStreamerById(reqMock as Request, resMock as Response);
+        await streamerController.getStreamerById(reqMock as Request, resMock as Response, nextMock);
 
-        expect(resMock.status).toHaveBeenCalledWith(500);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "Internal server error." });
+        expect(nextMock).toHaveBeenCalledWith(unexpectedError);
+        expect(resMock.status).not.toHaveBeenCalled();
     });
 });

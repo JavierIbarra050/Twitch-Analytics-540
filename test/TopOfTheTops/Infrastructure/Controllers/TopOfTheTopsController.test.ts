@@ -11,28 +11,30 @@ describe('TopOfTheTopsController', () => {
     let res: Partial<Response>;
     let jsonMock: jest.Mock;
     let statusMock: jest.Mock;
+    let nextMock: jest.Mock;
 
     beforeEach(() => {
         serviceMock = {
             getTopOfTheTops: jest.fn()
         } as unknown as jest.Mocked<TopOfTheTopsService>;
-        
+
         controller = new TopOfTheTopsController(serviceMock);
-        
+
         jsonMock = jest.fn();
         statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-        
+
         req = { query: {} };
         res = {
             status: statusMock,
             json: jsonMock
         };
+        nextMock = jest.fn();
     });
 
     it('should return 400 Bad Request when since parameter is invalid string', async () => {
         req.query = { since: 'invalid_number' };
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Bad Request. Invalid or missing parameters." });
@@ -42,7 +44,7 @@ describe('TopOfTheTopsController', () => {
     it('should return 400 Bad Request when since parameter contains decimals', async () => {
         req.query = { since: '12.34' };
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Bad Request. Invalid or missing parameters." });
@@ -52,7 +54,7 @@ describe('TopOfTheTopsController', () => {
     it('should return 400 Bad Request when since parameter contains non-numeric suffix', async () => {
         req.query = { since: '12abc' };
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Bad Request. Invalid or missing parameters." });
@@ -66,7 +68,7 @@ describe('TopOfTheTopsController', () => {
         serviceMock.getTopOfTheTops.mockResolvedValue(stats);
         req.query = { since: '600' };
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
         expect(serviceMock.getTopOfTheTops).toHaveBeenCalledWith(600);
         expect(statusMock).toHaveBeenCalledWith(200);
@@ -88,27 +90,29 @@ describe('TopOfTheTopsController', () => {
     it('should return 404 Not Found when no stats are available', async () => {
         serviceMock.getTopOfTheTops.mockResolvedValue([]);
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(404);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Not Found. No data available." });
     });
 
-    it('should return 401 Unauthorized when service throws TwitchUnauthorizedError', async () => {
-        serviceMock.getTopOfTheTops.mockRejectedValue(new TwitchUnauthorizedError());
+    it('should call next with TwitchUnauthorizedError when service throws it', async () => {
+        const twitchError = new TwitchUnauthorizedError();
+        serviceMock.getTopOfTheTops.mockRejectedValue(twitchError);
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
-        expect(statusMock).toHaveBeenCalledWith(401);
-        expect(jsonMock).toHaveBeenCalledWith({ error: "Unauthorized. Twitch access token is invalid or has expired." });
+        expect(nextMock).toHaveBeenCalledWith(twitchError);
+        expect(statusMock).not.toHaveBeenCalled();
     });
 
-    it('should return 500 Internal Server Error when service throws an exception', async () => {
-        serviceMock.getTopOfTheTops.mockRejectedValue(new Error('Unexpected error'));
+    it('should call next when service throws an unexpected exception', async () => {
+        const unexpectedError = new Error('Unexpected error');
+        serviceMock.getTopOfTheTops.mockRejectedValue(unexpectedError);
 
-        await controller.getTopOfTheTops(req as Request, res as Response);
+        await controller.getTopOfTheTops(req as Request, res as Response, nextMock);
 
-        expect(statusMock).toHaveBeenCalledWith(500);
-        expect(jsonMock).toHaveBeenCalledWith({ error: "Internal Server Error. Please try again later." });
+        expect(nextMock).toHaveBeenCalledWith(unexpectedError);
+        expect(statusMock).not.toHaveBeenCalled();
     });
 });
