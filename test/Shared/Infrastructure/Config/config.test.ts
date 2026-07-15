@@ -1,3 +1,4 @@
+import path from 'path';
 import { Config } from '../../../../src/Shared/Infrastructure/Config/config';
 
 describe('Config environment variable validation', () => {
@@ -35,5 +36,25 @@ describe('Config environment variable validation', () => {
         expect(configInstance.port).toBe(8080);
         expect(configInstance.twitchClientId).toBe('client-id');
         expect(configInstance.twitchClientSecret).toBe('secret');
+    });
+
+    it('should default databasePath to the local sqlite file when DATABASE_PATH is missing', () => {
+        delete process.env.DATABASE_PATH;
+        process.env.TWITCH_CLIENT_ID = 'client-id';
+        process.env.TWITCH_CLIENT_SECRET = 'secret';
+
+        const configInstance = new Config();
+
+        expect(configInstance.databasePath).toBe(path.resolve(process.cwd(), 'database.sqlite'));
+    });
+
+    it('should use DATABASE_PATH when it is set', () => {
+        process.env.DATABASE_PATH = '/custom/path/to/database.sqlite';
+        process.env.TWITCH_CLIENT_ID = 'client-id';
+        process.env.TWITCH_CLIENT_SECRET = 'secret';
+
+        const configInstance = new Config();
+
+        expect(configInstance.databasePath).toBe('/custom/path/to/database.sqlite');
     });
 });
