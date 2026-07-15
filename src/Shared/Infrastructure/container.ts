@@ -9,10 +9,7 @@ import { StreamerController } from '../../Streamer/Infrastructure/Controllers/St
 import { StreamTwitchRepository } from '../../Stream/Infrastructure/Repositories/StreamTwitchRepository';
 import { StreamService } from '../../Stream/Application/Services/StreamService';
 import { StreamController } from '../../Stream/Infrastructure/Controllers/StreamController';
-
-import { TwitchClient as EnrichedTwitchClient } from '../../EnrichedStream/Infrastructure/Repositories/TwitchClient';
-import { EnrichedStreamService } from '../../EnrichedStream/Application/Services/EnrichedStreamService';
-import { EnrichedStreamController } from '../../EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
+import { EnrichedStreamController } from '../../Stream/Infrastructure/Controllers/EnrichedStreamController';
 
 import { TwitchClient as TopOfTheTopsTwitchClient } from '../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
 import { SQLiteGameCacheRepository } from '../../TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';
@@ -41,10 +38,7 @@ export const streamerController = new StreamerController(streamerService);
 export const streamRepository = new StreamTwitchRepository(twitchHttpClient);
 export const streamService = new StreamService(streamRepository);
 export const streamController = new StreamController(streamService);
-
-export const enrichedStreamClient = new EnrichedTwitchClient(twitchHttpClient);
-export const enrichedStreamService = new EnrichedStreamService(enrichedStreamClient);
-export const enrichedStreamController = new EnrichedStreamController(enrichedStreamService);
+export const enrichedStreamController = new EnrichedStreamController(streamService);
 
 export const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpClient);
 export const gameCacheRepository = new SQLiteGameCacheRepository();

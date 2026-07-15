@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { EnrichedStreamService } from '../../Application/Services/EnrichedStreamService';
+import { StreamService } from '../../Application/Services/StreamService';
 import { TwitchUnauthorizedError } from '../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 export class EnrichedStreamController {
     constructor(
-        private readonly service: EnrichedStreamService
+        private readonly streamService: StreamService
     ) {}
 
     public getTopEnrichedStreams = async (req: Request, res: Response): Promise<void> => {
@@ -23,7 +23,7 @@ export class EnrichedStreamController {
                 return;
             }
 
-            const streams = await this.service.getTopEnrichedStreams(limit);
+            const streams = await this.streamService.getTopEnrichedStreams(limit);
 
             const response = streams.map(stream => ({
                 stream_id: stream.getStreamId(),

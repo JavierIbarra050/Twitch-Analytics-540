@@ -3,7 +3,7 @@ process.env.TWITCH_CLIENT_SECRET = 'test-client-secret';
 
 import axios, { AxiosResponse } from 'axios';
 import { StreamTwitchRepository } from "Stream/Infrastructure/Repositories/StreamTwitchRepository";
-import { TwitchStreamResponse } from "Shared/Infrastructure/Twitch/TwitchApiResponses";
+import { TwitchStreamResponse, TwitchUserResponse } from "Shared/Infrastructure/Twitch/TwitchApiResponses";
 import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
 import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
 import { Stream } from "Stream/Domain/Entities/Stream";
@@ -101,6 +101,113 @@ describe("StreamTwitchRepository", () => {
             mockedAxios.get.mockRejectedValue(new Error("Twitch Helix API error"));
 
             await expect(repository.getLiveStreams()).rejects.toThrow("Twitch Helix API error");
+        });
+    });
+
+    describe("getRawLiveStreams", () => {
+        it("should return empty array if limit is less than or equal to 0", async () => {
+            const streams = await repository.getRawLiveStreams(0);
+            expect(streams).toEqual([]);
+            expect(mockedAxios.get).not.toHaveBeenCalled();
+        });
+
+        it("should fetch raw live streams and map them correctly", async () => {
+            const twitchStreamMock: TwitchStreamResponse = {
+                data: [
+                    {
+                        id: "987654321",
+                        user_id: "111111111",
+                        user_login: "topstreamer1",
+                        user_name: "TopStreamer1",
+                        game_id: "509658",
+                        game_name: "Just Chatting",
+                        type: "live",
+                        title: "Epic Gaming Session",
+                        viewer_count: 34567,
+                        started_at: "2026-07-09T08:00:00Z",
+                        language: "en",
+                        thumbnail_url: "https://static-cdn.png",
+                        tag_ids: [],
+                        is_mature: false
+                    }
+                ]
+            };
+
+            mockedAxios.get.mockResolvedValue({ data: twitchStreamMock });
+
+            const streams = await repository.getRawLiveStreams(1);
+
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                'https://api.twitch.tv/helix/streams',
+                {
+                    headers: {
+                        'Client-Id': 'test-client-id',
+                        'Authorization': 'Bearer mocked-token'
+                    },
+                    params: { first: "1" }
+                }
+            );
+
+            expect(streams.length).toBe(1);
+            expect(streams[0]).toEqual({
+                id: "987654321",
+                userId: "111111111",
+                userName: "TopStreamer1",
+                viewerCount: 34567,
+                title: "Epic Gaming Session"
+            });
+        });
+    });
+
+    describe("getUsersProfiles", () => {
+        it("should return empty array if userIds is empty", async () => {
+            const profiles = await repository.getUsersProfiles([]);
+            expect(profiles).toEqual([]);
+            expect(mockedAxios.get).not.toHaveBeenCalled();
+        });
+
+        it("should fetch user profiles in batch and map them correctly", async () => {
+            const twitchUserMock: TwitchUserResponse = {
+                data: [
+                    {
+                        id: "111111111",
+                        login: "topstreamer1",
+                        display_name: "TopStreamer1",
+                        type: "",
+                        broadcaster_type: "partner",
+                        description: "Epic channel",
+                        profile_image_url: "https://static-cdn/image.png",
+                        offline_image_url: "",
+                        view_count: 500,
+                        created_at: "2020-01-01T00:00:00Z"
+                    }
+                ]
+            };
+
+            mockedAxios.get.mockResolvedValue({ data: twitchUserMock });
+
+            const profiles = await repository.getUsersProfiles(["111111111"]);
+
+            const expectedParams = new URLSearchParams();
+            expectedParams.append('id', '111111111');
+
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                'https://api.twitch.tv/helix/users',
+                {
+                    headers: {
+                        'Client-Id': 'test-client-id',
+                        'Authorization': 'Bearer mocked-token'
+                    },
+                    params: expectedParams
+                }
+            );
+
+            expect(profiles.length).toBe(1);
+            expect(profiles[0]).toEqual({
+                id: "111111111",
+                displayName: "TopStreamer1",
+                profileImageUrl: "https://static-cdn/image.png"
+            });
         });
     });
 });

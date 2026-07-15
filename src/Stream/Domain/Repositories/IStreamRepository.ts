@@ -1,3 +1,5 @@
+import { Stream } from "../Entities/Stream";
+
 export interface RawStream {
     id: string;
     userId: string;
@@ -12,7 +14,8 @@ export interface UserProfile {
     profileImageUrl: string;
 }
 
-export interface ITwitchClient {
+export interface IStreamRepository {
+    getLiveStreams(): Promise<Stream[]>;
     getRawLiveStreams(limit: number): Promise<RawStream[]>;
     getUsersProfiles(userIds: string[]): Promise<UserProfile[]>;
 }
