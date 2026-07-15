@@ -82,7 +82,16 @@ describe('TopOfTheTopsService', () => {
     });
 
     it('should query Twitch and refresh cache if since parameter forces update', async () => {
+        const staleCachedStats = [
+            new TopOfTheTops(
+                new Game('stale', 'Stale Game'),
+                new Video('stale-v', 'stale-u', 'Stale User', 'Stale Title', 999, '1m', '2020-01-01T00:00:00Z'),
+                1,
+                999
+            )
+        ];
         cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(8);
+        cacheRepositoryMock.getCachedStats.mockResolvedValue(staleCachedStats);
         twitchClientMock.getTopGames.mockResolvedValue([
             { id: '1', name: 'Game 1' }
         ]);
@@ -93,6 +102,9 @@ describe('TopOfTheTopsService', () => {
         const result = await service.getTopOfTheTops(300);
 
         expect(result).toHaveLength(1);
+        expect(result).not.toEqual(staleCachedStats);
+        expect(twitchClientMock.getTopGames).toHaveBeenCalled();
+        expect(cacheRepositoryMock.getCachedStats).not.toHaveBeenCalled();
         expect(cacheRepositoryMock.saveCachedStats).toHaveBeenCalledWith(result);
     });
 
