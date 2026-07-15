@@ -1,5 +1,7 @@
 import { IGameCacheRepository } from "../../Domain/Repositories/IGameCacheRepository";
 import { TopOfTheTops } from "../../Domain/Entities/TopOfTheTops";
+import { Game } from "../../Domain/Entities/Game";
+import { Video } from "../../Domain/Entities/Video";
 import { getDatabase } from "../../../Shared/Infrastructure/Database/database";
 
 export class GameCacheRepository implements IGameCacheRepository {
@@ -20,15 +22,18 @@ export class GameCacheRepository implements IGameCacheRepository {
             return null;
         }
         return rows.map(row => new TopOfTheTops(
-            row.game_id,
-            row.game_name,
-            row.user_name,
+            new Game(row.game_id, row.game_name),
+            new Video(
+                "",
+                "",
+                row.user_name,
+                row.most_viewed_title,
+                Number(row.most_viewed_views),
+                row.most_viewed_duration,
+                row.most_viewed_created_at
+            ),
             Number(row.total_videos),
-            Number(row.total_views),
-            row.most_viewed_title,
-            Number(row.most_viewed_views),
-            row.most_viewed_duration,
-            row.most_viewed_created_at
+            Number(row.total_views)
         ));
     }
 

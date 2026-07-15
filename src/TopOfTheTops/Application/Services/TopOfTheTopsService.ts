@@ -1,6 +1,8 @@
 import { ITwitchClient, TwitchGame } from "../../Domain/Repositories/ITwitchClient";
 import { IGameCacheRepository } from "../../Domain/Repositories/IGameCacheRepository";
 import { TopOfTheTops } from "../../Domain/Entities/TopOfTheTops";
+import { Game } from "../../Domain/Entities/Game";
+import { Video } from "../../Domain/Entities/Video";
 
 export class TopOfTheTopsService {
     constructor(
@@ -55,16 +57,22 @@ export class TopOfTheTopsService {
         const totalVideosCount = userVideos.length;
         const totalViewsSum = userVideos.reduce((sum, v) => sum + (v.view_count || 0), 0);
 
-        return new TopOfTheTops(
-            game.id,
-            game.name,
+        const gameEntity = new Game(game.id, game.name);
+        const videoEntity = new Video(
+            mostViewedVideo.id,
+            mostViewedVideo.user_id,
             mostViewedVideo.user_name,
-            totalVideosCount,
-            totalViewsSum,
             mostViewedVideo.title,
             mostViewedVideo.view_count,
             mostViewedVideo.duration,
             mostViewedVideo.created_at
+        );
+
+        return new TopOfTheTops(
+            gameEntity,
+            videoEntity,
+            totalVideosCount,
+            totalViewsSum
         );
     }
 }

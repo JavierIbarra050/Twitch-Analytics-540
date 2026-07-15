@@ -1,5 +1,7 @@
 import { GameCacheRepository } from '../../../../src/TopOfTheTops/Infrastructure/Repositories/GameCacheRepository';
 import { TopOfTheTops } from '../../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
+import { Game } from '../../../../src/TopOfTheTops/Domain/Entities/Game';
+import { Video } from '../../../../src/TopOfTheTops/Domain/Entities/Video';
 import * as database from '../../../../src/Shared/Infrastructure/Database/database';
 
 jest.mock('../../../../src/Shared/Infrastructure/Database/database');
@@ -53,8 +55,10 @@ describe('GameCacheRepository', () => {
 
     it('should delete previous cache and insert new stats inside a transaction', async () => {
         const stat = new TopOfTheTops(
-            '509658', 'Just Chatting', 'LCK', 4, 1000000,
-            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
+            new Game('509658', 'Just Chatting'),
+            new Video('v1', 'u1', 'LCK', 'Title', 50000, '1h', '2026-07-09T00:00:00Z'),
+            4,
+            1000000
         );
 
         await repository.saveCachedStats([stat]);
@@ -70,8 +74,10 @@ describe('GameCacheRepository', () => {
 
     it('should rollback transaction and rethrow error when database operations fail', async () => {
         const stat = new TopOfTheTops(
-            '509658', 'Just Chatting', 'LCK', 4, 1000000,
-            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
+            new Game('509658', 'Just Chatting'),
+            new Video('v1', 'u1', 'LCK', 'Title', 50000, '1h', '2026-07-09T00:00:00Z'),
+            4,
+            1000000
         );
 
         dbMock.run.mockImplementation(async (sql: string) => {
