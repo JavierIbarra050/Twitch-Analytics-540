@@ -54,6 +54,65 @@ describe('DatabaseConnection driver selection', () => {
     });
 });
 
+describe('SQLiteDatabaseAdapter.all', () => {
+    const tempDbPath = path.resolve(__dirname, 'sqlite-adapter-all-test.sqlite');
+    let adapter: SQLiteDatabaseAdapter;
+
+    const removeTempDb = () => {
+        if (fs.existsSync(tempDbPath)) {
+            fs.unlinkSync(tempDbPath);
+        }
+    };
+
+    beforeEach(async () => {
+        removeTempDb();
+        adapter = new SQLiteDatabaseAdapter(tempDbPath);
+        await adapter.exec(`
+            CREATE TABLE items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL
+            );
+        `);
+    });
+
+    afterEach(async () => {
+        await adapter.close();
+        removeTempDb();
+    });
+
+    it('should return an empty array when no rows match', async () => {
+        const rows = await adapter.all<{ id: number; name: string }>('SELECT * FROM items');
+
+        expect(Array.isArray(rows)).toBe(true);
+        expect(rows).toHaveLength(0);
+    });
+
+    it('should return every matching row with the expected data', async () => {
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['first']);
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['second']);
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['third']);
+
+        const rows = await adapter.all<{ id: number; name: string }>('SELECT id, name FROM items ORDER BY id ASC');
+
+        expect(rows).toHaveLength(3);
+        expect(rows.map(row => row.name)).toEqual(['first', 'second', 'third']);
+    });
+
+    it('should apply the params filter and only return matching rows', async () => {
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['apple']);
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['banana']);
+        await adapter.run('INSERT INTO items (name) VALUES (?)', ['apricot']);
+
+        const rows = await adapter.all<{ id: number; name: string }>(
+            'SELECT id, name FROM items WHERE name LIKE ? ORDER BY id ASC',
+            ['a%']
+        );
+
+        expect(rows).toHaveLength(2);
+        expect(rows.map(row => row.name)).toEqual(['apple', 'apricot']);
+    });
+});
+
 describe('initializeDatabase game_cache migration', () => {
     const tempDbPath = path.resolve(__dirname, 'game-cache-migration-test.sqlite');
     const originalDbHost = config.dbHost;
