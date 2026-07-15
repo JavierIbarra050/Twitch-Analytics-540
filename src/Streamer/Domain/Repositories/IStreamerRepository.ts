@@ -1,5 +1,5 @@
 import { Streamer } from "../Entities/Streamer";
 
-export interface IStreamerExternalRepository {
+export interface IStreamerRepository {
     searchStreamerById(id: number): Promise<Streamer | null>;
 }

@@ -1,8 +1,8 @@
-import { IStreamerExternalRepository } from "../../Domain/Repositories/IStreamerExternalRepository";
+import { IStreamerRepository } from "../../Domain/Repositories/IStreamerRepository";
 import { Streamer } from '../../Domain/Entities/Streamer';
 import { TwitchUsersClient } from "../../../Shared/Infrastructure/Twitch/TwitchUsersClient";
 
-export class StreamerTwitchRepository implements IStreamerExternalRepository {
+export class StreamerTwitchRepository implements IStreamerRepository {
     constructor(
         private readonly usersClient: TwitchUsersClient
     ) {}
