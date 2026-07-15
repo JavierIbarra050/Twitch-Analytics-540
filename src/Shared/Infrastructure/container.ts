@@ -13,7 +13,7 @@ import { StreamController } from '../../Stream/Infrastructure/Controllers/Stream
 import { EnrichedStreamController } from '../../Stream/Infrastructure/Controllers/EnrichedStreamController';
 
 import { TwitchClient as TopOfTheTopsTwitchClient } from '../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
-import { SQLiteGameCacheRepository } from '../../TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';
+import { GameCacheRepository } from '../../TopOfTheTops/Infrastructure/Repositories/GameCacheRepository';
 import { TopOfTheTopsService } from '../../TopOfTheTops/Application/Services/TopOfTheTopsService';
 import { TopOfTheTopsController } from '../../TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
 
@@ -43,7 +43,7 @@ export const streamController = new StreamController(streamService);
 export const enrichedStreamController = new EnrichedStreamController(streamService);
 
 export const topOfTheTopsTwitchClient = new TopOfTheTopsTwitchClient(twitchHttpClient);
-export const gameCacheRepository = new SQLiteGameCacheRepository();
+export const gameCacheRepository = new GameCacheRepository();
 export const topOfTheTopsService = new TopOfTheTopsService(topOfTheTopsTwitchClient, gameCacheRepository);
 export const topOfTheTopsController = new TopOfTheTopsController(topOfTheTopsService);
 export const appConfig = config;

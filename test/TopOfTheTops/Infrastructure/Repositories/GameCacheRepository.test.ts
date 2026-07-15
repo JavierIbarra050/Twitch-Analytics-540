@@ -1,15 +1,15 @@
-import { SQLiteGameCacheRepository } from '../../../../src/TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';
+import { GameCacheRepository } from '../../../../src/TopOfTheTops/Infrastructure/Repositories/GameCacheRepository';
 import { TopOfTheTops } from '../../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
 import * as database from '../../../../src/Shared/Infrastructure/Database/database';
 
 jest.mock('../../../../src/Shared/Infrastructure/Database/database');
 
-describe('SQLiteGameCacheRepository', () => {
-    let repository: SQLiteGameCacheRepository;
+describe('GameCacheRepository', () => {
+    let repository: GameCacheRepository;
     let dbMock: any;
 
     beforeEach(() => {
-        repository = new SQLiteGameCacheRepository();
+        repository = new GameCacheRepository();
         dbMock = {
             all: jest.fn(),
             run: jest.fn(),

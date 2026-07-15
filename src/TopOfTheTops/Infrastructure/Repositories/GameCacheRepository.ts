@@ -2,7 +2,7 @@ import { IGameCacheRepository } from "../../Domain/Repositories/IGameCacheReposi
 import { TopOfTheTops } from "../../Domain/Entities/TopOfTheTops";
 import { getDatabase } from "../../../Shared/Infrastructure/Database/database";
 
-export class SQLiteGameCacheRepository implements IGameCacheRepository {
+export class GameCacheRepository implements IGameCacheRepository {
     async getCachedStats(): Promise<TopOfTheTops[] | null> {
         const db = await getDatabase();
         const rows = await db.all<{
