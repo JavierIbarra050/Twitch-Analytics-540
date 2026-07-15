@@ -9,6 +9,7 @@ describe("StreamController", () => {
     let streamController: StreamController;
     let reqMock: Partial<Request>;
     let resMock: Partial<Response>;
+    let nextMock: jest.Mock;
 
     beforeEach(() => {
         streamServiceMock = {
@@ -25,6 +26,8 @@ describe("StreamController", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         };
+
+        nextMock = jest.fn();
     });
 
     it("should return live streams list and 200 status when streams exist", async () => {
@@ -35,7 +38,7 @@ describe("StreamController", () => {
 
         streamServiceMock.getLiveStreams.mockResolvedValue(expectedStreams);
 
-        await streamController.getLiveStreams(reqMock as Request, resMock as Response);
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
 
         expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith();
         expect(resMock.status).toHaveBeenCalledWith(200);
@@ -45,21 +48,23 @@ describe("StreamController", () => {
         ]);
     });
 
-    it("should return 401 status when service throws TwitchUnauthorizedError", async () => {
-        streamServiceMock.getLiveStreams.mockRejectedValue(new TwitchUnauthorizedError());
+    it("should call next with TwitchUnauthorizedError when service throws it", async () => {
+        const twitchError = new TwitchUnauthorizedError();
+        streamServiceMock.getLiveStreams.mockRejectedValue(twitchError);
 
-        await streamController.getLiveStreams(reqMock as Request, resMock as Response);
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
 
-        expect(resMock.status).toHaveBeenCalledWith(401);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "Unauthorized. Twitch access token is invalid or has expired." });
+        expect(nextMock).toHaveBeenCalledWith(twitchError);
+        expect(resMock.status).not.toHaveBeenCalled();
     });
 
-    it("should return 500 status when an unexpected error occurs", async () => {
-        streamServiceMock.getLiveStreams.mockRejectedValue(new Error("Unexpected system error"));
+    it("should call next when an unexpected error occurs", async () => {
+        const unexpectedError = new Error("Unexpected system error");
+        streamServiceMock.getLiveStreams.mockRejectedValue(unexpectedError);
 
-        await streamController.getLiveStreams(reqMock as Request, resMock as Response);
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
 
-        expect(resMock.status).toHaveBeenCalledWith(500);
-        expect(resMock.json).toHaveBeenCalledWith({ error: "Internal server error." });
+        expect(nextMock).toHaveBeenCalledWith(unexpectedError);
+        expect(resMock.status).not.toHaveBeenCalled();
     });
 });

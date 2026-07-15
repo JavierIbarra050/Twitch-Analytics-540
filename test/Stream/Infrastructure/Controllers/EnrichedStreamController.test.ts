@@ -11,6 +11,7 @@ describe("EnrichedStreamController", () => {
     let res: Partial<Response>;
     let jsonMock: jest.Mock;
     let statusMock: jest.Mock;
+    let nextMock: jest.Mock;
 
     beforeEach(() => {
         streamServiceMock = {
@@ -27,12 +28,13 @@ describe("EnrichedStreamController", () => {
             status: statusMock,
             json: jsonMock
         };
+        nextMock = jest.fn();
     });
 
     it("should return 400 if limit query param is missing", async () => {
         req.query = {};
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
@@ -41,7 +43,7 @@ describe("EnrichedStreamController", () => {
     it("should return 400 if limit query param is not a number", async () => {
         req.query = { limit: "invalid" };
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
@@ -50,7 +52,7 @@ describe("EnrichedStreamController", () => {
     it("should return 400 if limit query param contains decimal values", async () => {
         req.query = { limit: "12.34" };
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
@@ -59,7 +61,7 @@ describe("EnrichedStreamController", () => {
     it("should return 400 if limit query param contains non-numeric suffix", async () => {
         req.query = { limit: "12abc" };
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
@@ -68,7 +70,7 @@ describe("EnrichedStreamController", () => {
     it("should return 400 if limit query param is less than or equal to 0", async () => {
         req.query = { limit: "0" };
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
@@ -82,7 +84,7 @@ describe("EnrichedStreamController", () => {
 
         streamServiceMock.getTopEnrichedStreams.mockResolvedValue([stream1, stream2]);
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
         expect(streamServiceMock.getTopEnrichedStreams).toHaveBeenCalledWith(2);
         expect(statusMock).toHaveBeenCalledWith(200);
@@ -108,23 +110,25 @@ describe("EnrichedStreamController", () => {
         ]);
     });
 
-    it("should return 401 if service throws TwitchUnauthorizedError", async () => {
+    it("should call next with TwitchUnauthorizedError when service throws it", async () => {
         req.query = { limit: "5" };
-        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(new TwitchUnauthorizedError());
+        const twitchError = new TwitchUnauthorizedError();
+        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(twitchError);
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
-        expect(statusMock).toHaveBeenCalledWith(401);
-        expect(jsonMock).toHaveBeenCalledWith({ error: "Unauthorized. Twitch access token is invalid or has expired." });
+        expect(nextMock).toHaveBeenCalledWith(twitchError);
+        expect(statusMock).not.toHaveBeenCalled();
     });
 
-    it("should return 500 on unexpected errors", async () => {
+    it("should call next on unexpected errors", async () => {
         req.query = { limit: "5" };
-        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(new Error("Database breakdown"));
+        const unexpectedError = new Error("Database breakdown");
+        streamServiceMock.getTopEnrichedStreams.mockRejectedValue(unexpectedError);
 
-        await controller.getTopEnrichedStreams(req as Request, res as Response);
+        await controller.getTopEnrichedStreams(req as Request, res as Response, nextMock);
 
-        expect(statusMock).toHaveBeenCalledWith(500);
-        expect(jsonMock).toHaveBeenCalledWith({ error: "Internal server error." });
+        expect(nextMock).toHaveBeenCalledWith(unexpectedError);
+        expect(statusMock).not.toHaveBeenCalled();
     });
 });

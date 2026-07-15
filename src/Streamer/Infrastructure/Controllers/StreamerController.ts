@@ -1,14 +1,12 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { StreamerService } from "../../Application/Services/StreamerService";
-import { TwitchUnauthorizedError } from "../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError";
-import { StreamerNotFoundError } from "../../Domain/Errors/StreamerNotFoundError";
 
 export class StreamerController {
-    constructor ( 
+    constructor (
         private readonly streamerService: StreamerService,
     ) { }
 
-    public getStreamerById = async (req: Request, res: Response): Promise<void> => {
+    public getStreamerById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const idParam = req.query.id;
 
@@ -33,19 +31,9 @@ export class StreamerController {
                 view_count: streamer.getViewCount(),
                 created_at: streamer.getCreatedAt().toISOString()
             });
-            
+
         } catch (error) {
-            if (error instanceof StreamerNotFoundError) {
-                res.status(404).json({ error: "User not found." });
-                return;
-            }
-
-            if (error instanceof TwitchUnauthorizedError) {
-                res.status(401).json({ error: "Unauthorized. Twitch access token is invalid or has expired." });
-                return;
-            }
-
-            res.status(500).json({ error: "Internal server error." });
+            next(error);
         }
     }
 }
