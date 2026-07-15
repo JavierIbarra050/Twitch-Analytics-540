@@ -1,11 +1,13 @@
 import { IStreamRepository, RawStream, UserProfile } from "../../Domain/Repositories/IStreamRepository";
 import { Stream } from "../../Domain/Entities/Stream";
-import { TwitchStreamResponse, TwitchUserResponse } from "../../../Shared/Infrastructure/Twitch/TwitchApiResponses";
+import { TwitchStreamResponse } from "../../../Shared/Infrastructure/Twitch/TwitchApiResponses";
 import { TwitchHttpClient } from "../../../Shared/Infrastructure/Twitch/TwitchHttpClient";
+import { TwitchUsersClient } from "../../../Shared/Infrastructure/Twitch/TwitchUsersClient";
 
 export class StreamTwitchRepository implements IStreamRepository {
     constructor(
-        private readonly httpClient: TwitchHttpClient
+        private readonly httpClient: TwitchHttpClient,
+        private readonly usersClient: TwitchUsersClient
     ) {}
 
     private async fetchStreams(params: URLSearchParams | Record<string, string>): Promise<TwitchStreamResponse['data']> {
@@ -42,15 +44,9 @@ export class StreamTwitchRepository implements IStreamRepository {
             return [];
         }
 
-        const params = new URLSearchParams();
-        userIds.forEach(id => params.append('id', id));
+        const users = await this.usersClient.fetchByIds(userIds);
 
-        const response = await this.httpClient.get<TwitchUserResponse>(
-            'users',
-            params
-        );
-
-        return response.data.map(user => ({
+        return users.map(user => ({
             id: user.id,
             displayName: user.display_name,
             profileImageUrl: user.profile_image_url

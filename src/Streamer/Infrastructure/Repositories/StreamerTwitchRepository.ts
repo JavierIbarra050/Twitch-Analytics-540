@@ -1,20 +1,14 @@
 import { IStreamerExternalRepository } from "../../Domain/Repositories/IStreamerExternalRepository";
-import { TwitchUserResponse } from '../../../Shared/Infrastructure/Twitch/TwitchApiResponses';
 import { Streamer } from '../../Domain/Entities/Streamer';
-import { TwitchHttpClient } from '../../../Shared/Infrastructure/Twitch/TwitchHttpClient';
+import { TwitchUsersClient } from "../../../Shared/Infrastructure/Twitch/TwitchUsersClient";
 
 export class StreamerTwitchRepository implements IStreamerExternalRepository {
     constructor(
-        private readonly httpClient: TwitchHttpClient
+        private readonly usersClient: TwitchUsersClient
     ) {}
 
     async searchStreamerById(id: number): Promise<Streamer | null> {
-        const response = await this.httpClient.get<TwitchUserResponse>(
-            'users',
-            { id: id.toString() }
-        );
-        
-        const users = response.data;
+        const users = await this.usersClient.fetchByIds([id]);
 
         if (users.length === 0) {
             return null;
