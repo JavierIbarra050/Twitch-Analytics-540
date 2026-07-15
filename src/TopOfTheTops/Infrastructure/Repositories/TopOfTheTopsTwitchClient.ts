@@ -1,7 +1,7 @@
 import { ITwitchClient, TwitchGame, TwitchVideo } from "../../Domain/Repositories/ITwitchClient";
 import { TwitchHttpClient } from "../../../Shared/Infrastructure/Twitch/TwitchHttpClient";
 
-export class TwitchClient implements ITwitchClient {
+export class TopOfTheTopsTwitchClient implements ITwitchClient {
     constructor(private readonly twitchHttpClient: TwitchHttpClient) {}
 
     async getTopGames(limit: number): Promise<TwitchGame[]> {
