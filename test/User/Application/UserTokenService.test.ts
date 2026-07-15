@@ -9,7 +9,6 @@ describe("UserTokenService", () => {
 
     beforeEach(() => {
         userRepositoryMock = {
-            doesUserAlreadyExists: jest.fn(),
             saveUser: jest.fn(),
             findByEmail: jest.fn(),
             saveToken: jest.fn(),

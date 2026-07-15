@@ -8,7 +8,6 @@ describe("UserService", () => {
 
     beforeEach(() => {
         userRepositoryMock = {
-            doesUserAlreadyExists: jest.fn(),
             saveUser: jest.fn(),
             findByEmail: jest.fn(),
             saveToken: jest.fn(),
@@ -26,7 +25,6 @@ describe("UserService", () => {
 
         const result = await userService.registerNewUser(email);
 
-        expect(userRepositoryMock.doesUserAlreadyExists).not.toHaveBeenCalled();
         expect(userRepositoryMock.saveUser).toHaveBeenCalledWith(email, expect.any(String));
         
         const passedApiKey = userRepositoryMock.saveUser.mock.calls[0][1];
