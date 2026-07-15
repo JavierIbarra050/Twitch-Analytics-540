@@ -1,10 +1,10 @@
 import { Streamer } from "../../Domain/Entities/Streamer";
-import { IStreamerExternalRepository } from "../../Domain/Repositories/IStreamerExternalRepository";
+import { IStreamerRepository } from "../../Domain/Repositories/IStreamerRepository";
 import { StreamerNotFoundError } from "../../Domain/Errors/StreamerNotFoundError";
 
 export class StreamerService {
     constructor (
-        private readonly twitchRepository: IStreamerExternalRepository,
+        private readonly twitchRepository: IStreamerRepository,
     ) { }
 
     async getStreamerById(id: number): Promise<Streamer> {
