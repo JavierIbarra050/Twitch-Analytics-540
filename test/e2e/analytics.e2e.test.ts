@@ -5,11 +5,16 @@ const testDbPath = path.resolve(__dirname, '../../database_test.sqlite');
 process.env.DATABASE_PATH = testDbPath;
 process.env.TWITCH_CLIENT_ID = 'test-client-id';
 process.env.TWITCH_CLIENT_SECRET = 'test-client-secret';
+process.env.DB_HOST = '';
+process.env.DB_PORT = '';
+process.env.DB_USER = '';
+process.env.DB_PASSWORD = '';
+process.env.DB_NAME = '';
 
 import request from 'supertest';
 import axios from 'axios';
 import { app } from '../../src/app';
-import { initializeDatabase, closeDatabase } from '../../src/Shared/Infrastructure/Database/database';
+import { initializeDatabase, closeDatabase, getDatabase } from '../../src/Shared/Infrastructure/Database/database';
 
 jest.mock('axios');
 const mockedAxios = jest.mocked(axios);
@@ -20,6 +25,8 @@ describe('End-to-End Analytics API Flow', () => {
             fs.unlinkSync(testDbPath);
         }
         await initializeDatabase();
+        const db = await getDatabase();
+        expect(db.type).toBe('sqlite');
     });
 
     afterAll(async () => {
