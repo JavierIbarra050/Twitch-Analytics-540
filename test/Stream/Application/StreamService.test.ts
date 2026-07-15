@@ -27,7 +27,7 @@ describe("StreamService", () => {
 
             const streams = await streamService.getLiveStreams();
 
-            expect(streamRepositoryMock.getLiveStreams).toHaveBeenCalledWith();
+            expect(streamRepositoryMock.getLiveStreams).toHaveBeenCalledWith(undefined);
             expect(streams).toEqual(expectedStreams);
         });
 
@@ -43,6 +43,19 @@ describe("StreamService", () => {
             streamRepositoryMock.getLiveStreams.mockRejectedValue(new Error("Twitch Helix API error"));
 
             await expect(streamService.getLiveStreams()).rejects.toThrow("Twitch Helix API error");
+        });
+
+        it("should forward the given limit to the repository", async () => {
+            const expectedStreams = [
+                StreamMother.create({ title: "Stream 1", userName: "Ibai" })
+            ];
+
+            streamRepositoryMock.getLiveStreams.mockResolvedValue(expectedStreams);
+
+            const streams = await streamService.getLiveStreams(1);
+
+            expect(streamRepositoryMock.getLiveStreams).toHaveBeenCalledWith(1);
+            expect(streams).toEqual(expectedStreams);
         });
     });
 
