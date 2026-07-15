@@ -15,8 +15,10 @@ export class StreamTwitchRepository implements IStreamRepository {
         return response.data;
     }
 
-    async getLiveStreams(): Promise<Stream[]> {
-        const streams = await this.fetchStreams(new URLSearchParams());
+    async getLiveStreams(limit?: number): Promise<Stream[]> {
+        const streams = await this.fetchStreams(
+            limit !== undefined ? { first: limit.toString() } : new URLSearchParams()
+        );
 
         return streams.map(
             (stream) => new Stream(stream.title, stream.user_name)

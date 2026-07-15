@@ -17,6 +17,8 @@ export class GameCacheRepository implements IGameCacheRepository {
             most_viewed_views: string;
             most_viewed_duration: string;
             most_viewed_created_at: string;
+            video_id: string | null;
+            user_id: string | null;
         }>("SELECT * FROM game_cache");
         if (rows.length === 0) {
             return null;
@@ -24,8 +26,8 @@ export class GameCacheRepository implements IGameCacheRepository {
         return rows.map(row => new TopOfTheTops(
             new Game(row.game_id, row.game_name),
             new Video(
-                "",
-                "",
+                row.video_id || "",
+                row.user_id || "",
                 row.user_name,
                 row.most_viewed_title,
                 Number(row.most_viewed_views),
@@ -51,8 +53,9 @@ export class GameCacheRepository implements IGameCacheRepository {
                 await db.run(
                     `INSERT INTO game_cache (
                         game_id, game_name, user_name, total_videos, total_views,
-                        most_viewed_title, most_viewed_views, most_viewed_duration, most_viewed_created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                        most_viewed_title, most_viewed_views, most_viewed_duration, most_viewed_created_at,
+                        video_id, user_id, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                     [
                         stat.getGameId(),
                         stat.getGameName(),
@@ -62,7 +65,9 @@ export class GameCacheRepository implements IGameCacheRepository {
                         stat.getMostViewedTitle(),
                         stat.getMostViewedViews(),
                         stat.getMostViewedDuration(),
-                        stat.getMostViewedCreatedAt()
+                        stat.getMostViewedCreatedAt(),
+                        stat.getMostViewedVideoId() || "",
+                        stat.getMostViewedVideoUserId() || ""
                     ]
                 );
             }

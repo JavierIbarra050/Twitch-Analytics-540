@@ -143,6 +143,10 @@ export class DatabaseConnection {
     }
 
     if (config.dbHost) {
+      if (process.env.NODE_ENV === 'test') {
+        throw new Error('Refusing to connect to a MySQL host during tests — check environment isolation');
+      }
+
       this.db = new MySQLDatabaseAdapter({
         host: config.dbHost,
         port: config.dbPort,
@@ -207,9 +211,12 @@ export async function initializeDatabase(): Promise<void> {
         most_viewed_views VARCHAR(255) NOT NULL,
         most_viewed_duration VARCHAR(255) NOT NULL,
         most_viewed_created_at VARCHAR(255) NOT NULL,
+        video_id VARCHAR(255) NOT NULL DEFAULT '',
+        user_id VARCHAR(255) NOT NULL DEFAULT '',
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
     `);
+    await migrateMySQLGameCacheColumns(db);
   } else {
     await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
@@ -237,8 +244,37 @@ export async function initializeDatabase(): Promise<void> {
         most_viewed_views TEXT NOT NULL,
         most_viewed_duration TEXT NOT NULL,
         most_viewed_created_at TEXT NOT NULL,
+        video_id TEXT NOT NULL DEFAULT '',
+        user_id TEXT NOT NULL DEFAULT '',
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await migrateSQLiteGameCacheColumns(db);
+  }
+}
+
+async function migrateMySQLGameCacheColumns(db: IDatabase): Promise<void> {
+  const columns = await db.all<{ COLUMN_NAME: string }>(
+    `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'game_cache' AND TABLE_SCHEMA = DATABASE()`
+  );
+  const existingColumns = new Set(columns.map(column => column.COLUMN_NAME));
+
+  if (!existingColumns.has('video_id')) {
+    await db.exec(`ALTER TABLE game_cache ADD COLUMN video_id VARCHAR(255) NOT NULL DEFAULT ''`);
+  }
+  if (!existingColumns.has('user_id')) {
+    await db.exec(`ALTER TABLE game_cache ADD COLUMN user_id VARCHAR(255) NOT NULL DEFAULT ''`);
+  }
+}
+
+async function migrateSQLiteGameCacheColumns(db: IDatabase): Promise<void> {
+  const columns = await db.all<{ name: string }>(`PRAGMA table_info(game_cache)`);
+  const existingColumns = new Set(columns.map(column => column.name));
+
+  if (!existingColumns.has('video_id')) {
+    await db.exec(`ALTER TABLE game_cache ADD COLUMN video_id TEXT NOT NULL DEFAULT ''`);
+  }
+  if (!existingColumns.has('user_id')) {
+    await db.exec(`ALTER TABLE game_cache ADD COLUMN user_id TEXT NOT NULL DEFAULT ''`);
   }
 }

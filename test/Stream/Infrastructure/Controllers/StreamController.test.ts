@@ -40,12 +40,50 @@ describe("StreamController", () => {
 
         await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
 
-        expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith();
+        expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith(undefined);
         expect(resMock.status).toHaveBeenCalledWith(200);
         expect(resMock.json).toHaveBeenCalledWith([
             { title: "Charlando", user_name: "Ibai" },
             { title: "Minecraft", user_name: "Auronplay" }
         ]);
+    });
+
+    it("should return live streams limited by the given limit query param", async () => {
+        reqMock.query = { limit: "1" };
+
+        const expectedStreams = [
+            StreamMother.create({ title: "Charlando", userName: "Ibai" })
+        ];
+
+        streamServiceMock.getLiveStreams.mockResolvedValue(expectedStreams);
+
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
+
+        expect(streamServiceMock.getLiveStreams).toHaveBeenCalledWith(1);
+        expect(resMock.status).toHaveBeenCalledWith(200);
+        expect(resMock.json).toHaveBeenCalledWith([
+            { title: "Charlando", user_name: "Ibai" }
+        ]);
+    });
+
+    it("should return 400 if limit query param is not a positive integer", async () => {
+        reqMock.query = { limit: "invalid" };
+
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
+
+        expect(resMock.status).toHaveBeenCalledWith(400);
+        expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
+        expect(streamServiceMock.getLiveStreams).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 if limit query param is less than or equal to 0", async () => {
+        reqMock.query = { limit: "0" };
+
+        await streamController.getLiveStreams(reqMock as Request, resMock as Response, nextMock);
+
+        expect(resMock.status).toHaveBeenCalledWith(400);
+        expect(resMock.json).toHaveBeenCalledWith({ error: "Invalid 'limit' parameter." });
+        expect(streamServiceMock.getLiveStreams).not.toHaveBeenCalled();
     });
 
     it("should call next with TwitchUnauthorizedError when service throws it", async () => {
