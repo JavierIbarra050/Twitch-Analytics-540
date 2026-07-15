@@ -1,10 +1,10 @@
-import { TwitchClient } from '../../../../src/TopOfTheTops/Infrastructure/Repositories/TwitchClient';
+import { TopOfTheTopsTwitchClient } from '../../../../src/TopOfTheTops/Infrastructure/Repositories/TopOfTheTopsTwitchClient';
 import { TwitchHttpClient } from '../../../../src/Shared/Infrastructure/Twitch/TwitchHttpClient';
 
 jest.mock('../../../../src/Shared/Infrastructure/Twitch/TwitchHttpClient');
 
-describe('TwitchClient in TopOfTheTops module', () => {
-    let client: TwitchClient;
+describe('TopOfTheTopsTwitchClient in TopOfTheTops module', () => {
+    let client: TopOfTheTopsTwitchClient;
     let httpClientMock: jest.Mocked<TwitchHttpClient>;
 
     beforeEach(() => {
@@ -13,7 +13,7 @@ describe('TwitchClient in TopOfTheTops module', () => {
             twitchClientId: 'test-client-id',
             twitchClientSecret: 'test-client-secret'
         } as any) as jest.Mocked<TwitchHttpClient>;
-        client = new TwitchClient(httpClientMock);
+        client = new TopOfTheTopsTwitchClient(httpClientMock);
     });
 
     it('should fetch top games from Twitch', async () => {

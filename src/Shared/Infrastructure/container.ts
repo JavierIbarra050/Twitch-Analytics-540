@@ -12,7 +12,7 @@ import { StreamService } from '../../Stream/Application/Services/StreamService';
 import { StreamController } from '../../Stream/Infrastructure/Controllers/StreamController';
 import { EnrichedStreamController } from '../../Stream/Infrastructure/Controllers/EnrichedStreamController';
 
-import { TwitchClient as TopOfTheTopsTwitchClient } from '../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
+import { TopOfTheTopsTwitchClient } from '../../TopOfTheTops/Infrastructure/Repositories/TopOfTheTopsTwitchClient';
 import { GameCacheRepository } from '../../TopOfTheTops/Infrastructure/Repositories/GameCacheRepository';
 import { TopOfTheTopsService } from '../../TopOfTheTops/Application/Services/TopOfTheTopsService';
 import { TopOfTheTopsController } from '../../TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
