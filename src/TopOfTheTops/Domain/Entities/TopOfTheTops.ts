@@ -1,26 +1,24 @@
+import { Game } from "./Game";
+import { Video } from "./Video";
+
 export class TopOfTheTops {
     constructor(
-        private readonly gameId: string,
-        private readonly gameName: string,
-        private readonly userName: string,
+        private readonly game: Game,
+        private readonly mostViewedVideo: Video,
         private readonly totalVideos: number,
         private readonly totalViews: number,
-        private readonly mostViewedTitle: string,
-        private readonly mostViewedViews: number,
-        private readonly mostViewedDuration: string,
-        private readonly mostViewedCreatedAt: string,
     ) {}
 
     getGameId(): string {
-        return this.gameId;
+        return this.game.getId();
     }
 
     getGameName(): string {
-        return this.gameName;
+        return this.game.getName();
     }
 
     getUserName(): string {
-        return this.userName;
+        return this.mostViewedVideo.getUserName();
     }
 
     getTotalVideos(): number {
@@ -32,18 +30,18 @@ export class TopOfTheTops {
     }
 
     getMostViewedTitle(): string {
-        return this.mostViewedTitle;
+        return this.mostViewedVideo.getTitle();
     }
 
     getMostViewedViews(): number {
-        return this.mostViewedViews;
+        return this.mostViewedVideo.getViewCount();
     }
 
     getMostViewedDuration(): string {
-        return this.mostViewedDuration;
+        return this.mostViewedVideo.getDuration();
     }
 
     getMostViewedCreatedAt(): string {
-        return this.mostViewedCreatedAt;
+        return this.mostViewedVideo.getCreatedAt();
     }
 }

@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { TopOfTheTopsController } from '../../../../src/TopOfTheTops/Infrastructure/Controllers/TopOfTheTopsController';
 import { TopOfTheTopsService } from '../../../../src/TopOfTheTops/Application/Services/TopOfTheTopsService';
 import { TopOfTheTops } from '../../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
+import { Game } from '../../../../src/TopOfTheTops/Domain/Entities/Game';
+import { Video } from '../../../../src/TopOfTheTops/Domain/Entities/Video';
 import { TwitchUnauthorizedError } from '../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 describe('TopOfTheTopsController', () => {
@@ -63,7 +65,12 @@ describe('TopOfTheTopsController', () => {
 
     it('should return 200 OK with mapped statistics', async () => {
         const stats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops(
+                new Game('1', 'Game 1'),
+                new Video('v1', 'u1', 'User 1', 'Title 1', 100, '10m', '2026-07-09T00:00:00Z'),
+                2,
+                200
+            )
         ];
         serviceMock.getTopOfTheTops.mockResolvedValue(stats);
         req.query = { since: '600' };

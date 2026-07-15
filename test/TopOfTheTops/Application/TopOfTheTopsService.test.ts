@@ -2,6 +2,8 @@ import { TopOfTheTopsService } from '../../../src/TopOfTheTops/Application/Servi
 import { ITwitchClient } from '../../../src/TopOfTheTops/Domain/Repositories/ITwitchClient';
 import { IGameCacheRepository } from '../../../src/TopOfTheTops/Domain/Repositories/IGameCacheRepository';
 import { TopOfTheTops } from '../../../src/TopOfTheTops/Domain/Entities/TopOfTheTops';
+import { Game } from '../../../src/TopOfTheTops/Domain/Entities/Game';
+import { Video } from '../../../src/TopOfTheTops/Domain/Entities/Video';
 
 describe('TopOfTheTopsService', () => {
     let service: TopOfTheTopsService;
@@ -23,7 +25,12 @@ describe('TopOfTheTopsService', () => {
 
     it('should return cached stats when cache age is less than 10 minutes and since is not provided', async () => {
         const cachedStats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops(
+                new Game('1', 'Game 1'),
+                new Video('v1', 'u1', 'User 1', 'Title 1', 100, '10m', '2026-07-09T00:00:00Z'),
+                2,
+                200
+            )
         ];
         cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(5);
         cacheRepositoryMock.getCachedStats.mockResolvedValue(cachedStats);
@@ -37,7 +44,12 @@ describe('TopOfTheTopsService', () => {
 
     it('should return cached stats when cache age is within since parameter limit', async () => {
         const cachedStats = [
-            new TopOfTheTops('1', 'Game 1', 'User 1', 2, 200, 'Title 1', 100, '10m', '2026-07-09T00:00:00Z')
+            new TopOfTheTops(
+                new Game('1', 'Game 1'),
+                new Video('v1', 'u1', 'User 1', 'Title 1', 100, '10m', '2026-07-09T00:00:00Z'),
+                2,
+                200
+            )
         ];
         cacheRepositoryMock.getCacheAgeInMinutes.mockResolvedValue(15);
         cacheRepositoryMock.getCachedStats.mockResolvedValue(cachedStats);
