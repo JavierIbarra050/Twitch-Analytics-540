@@ -8,10 +8,12 @@ import { config } from '../../../../src/Shared/Infrastructure/Config/config';
 describe('DatabaseConnection driver selection', () => {
     const originalDbHost = config.dbHost;
     const originalDatabasePath = process.env.DATABASE_PATH;
+    const originalNodeEnv = process.env.NODE_ENV;
 
     afterEach(async () => {
         await DatabaseConnection.getInstance().close();
         (config as { dbHost?: string }).dbHost = originalDbHost;
+        process.env.NODE_ENV = originalNodeEnv;
         if (originalDatabasePath === undefined) {
             delete process.env.DATABASE_PATH;
         } else {
@@ -20,6 +22,7 @@ describe('DatabaseConnection driver selection', () => {
     });
 
     it('should select MySQL when dbHost is configured, even if DATABASE_PATH is also set', async () => {
+        process.env.NODE_ENV = 'production';
         (config as { dbHost?: string }).dbHost = 'mysql-host';
         process.env.DATABASE_PATH = '/tmp/should-be-ignored.sqlite';
 
@@ -36,5 +39,14 @@ describe('DatabaseConnection driver selection', () => {
 
         expect(db).toBeInstanceOf(SQLiteDatabaseAdapter);
         expect(db.type).toBe('sqlite');
+    });
+
+    it('should refuse to select MySQL when NODE_ENV is test, even if dbHost is configured', async () => {
+        process.env.NODE_ENV = 'test';
+        (config as { dbHost?: string }).dbHost = 'mysql-host';
+
+        await expect(DatabaseConnection.getInstance().getConnection()).rejects.toThrow(
+            'Refusing to connect to a MySQL host during tests — check environment isolation'
+        );
     });
 });

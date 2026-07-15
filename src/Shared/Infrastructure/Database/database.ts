@@ -143,6 +143,10 @@ export class DatabaseConnection {
     }
 
     if (config.dbHost) {
+      if (process.env.NODE_ENV === 'test') {
+        throw new Error('Refusing to connect to a MySQL host during tests — check environment isolation');
+      }
+
       this.db = new MySQLDatabaseAdapter({
         host: config.dbHost,
         port: config.dbPort,
