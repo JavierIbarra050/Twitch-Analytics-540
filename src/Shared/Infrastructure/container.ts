@@ -1,5 +1,6 @@
 import { config } from './Config/config';
 import { TwitchHttpClient } from './Twitch/TwitchHttpClient';
+import { TwitchUsersClient } from './Twitch/TwitchUsersClient';
 import { AuthMiddleware } from './Middlewares/AuthMiddleware';
 
 import { StreamerTwitchRepository } from '../../Streamer/Infrastructure/Repositories/StreamerTwitchRepository';
@@ -29,13 +30,14 @@ export const userTokenService = new UserTokenService(userRepository, config.toke
 export const userTokenController = new UserTokenController(userTokenService);
 
 export const twitchHttpClient = new TwitchHttpClient(config);
+export const twitchUsersClient = new TwitchUsersClient(twitchHttpClient);
 export const authMiddleware = new AuthMiddleware(userRepository);
 
-export const streamerRepository = new StreamerTwitchRepository(twitchHttpClient);
+export const streamerRepository = new StreamerTwitchRepository(twitchUsersClient);
 export const streamerService = new StreamerService(streamerRepository);
 export const streamerController = new StreamerController(streamerService);
 
-export const streamRepository = new StreamTwitchRepository(twitchHttpClient);
+export const streamRepository = new StreamTwitchRepository(twitchHttpClient, twitchUsersClient);
 export const streamService = new StreamService(streamRepository);
 export const streamController = new StreamController(streamService);
 export const enrichedStreamController = new EnrichedStreamController(streamService);

@@ -6,6 +6,7 @@ import { StreamTwitchRepository } from "Stream/Infrastructure/Repositories/Strea
 import { TwitchStreamResponse, TwitchUserResponse } from "Shared/Infrastructure/Twitch/TwitchApiResponses";
 import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
 import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
+import { TwitchUsersClient } from "Shared/Infrastructure/Twitch/TwitchUsersClient";
 import { Stream } from "Stream/Domain/Entities/Stream";
 
 jest.mock('axios');
@@ -22,7 +23,7 @@ describe("StreamTwitchRepository", () => {
             twitchClientId: 'test-client-id',
             twitchClientSecret: 'test-client-secret'
         } as any);
-        repository = new StreamTwitchRepository(httpClient);
+        repository = new StreamTwitchRepository(httpClient, new TwitchUsersClient(httpClient));
 
         const tokenResponse: Partial<AxiosResponse<TwitchTokenResponse>> = {
             data: {
