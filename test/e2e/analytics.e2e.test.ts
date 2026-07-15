@@ -223,4 +223,21 @@ describe('End-to-End Analytics API Flow', () => {
         expect(res.status).toBe(401);
         expect(res.body).toEqual({ error: 'Unauthorized. Token is invalid or expired.' });
     });
+
+    it('should return 401 when requesting a token with an invalid api_key', async () => {
+        const email = 'invalid-credentials-user@example.com';
+
+        const registerRes = await request(app)
+            .post('/register')
+            .send({ email });
+
+        expect(registerRes.status).toBe(200);
+
+        const tokenRes = await request(app)
+            .post('/token')
+            .send({ email, api_key: 'wrong-api-key' });
+
+        expect(tokenRes.status).toBe(401);
+        expect(tokenRes.body).toEqual({ error: 'Unauthorized. API access token is invalid.' });
+    });
 });
