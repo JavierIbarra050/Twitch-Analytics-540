@@ -16,17 +16,17 @@ export class StreamerTwitchRepository implements IStreamerRepository {
 
         const twitchUser = users[0];
 
-        return new Streamer(
-            Number(twitchUser.id),
-            twitchUser.login,
-            twitchUser.display_name,
-            twitchUser.type,
-            twitchUser.broadcaster_type,
-            twitchUser.description,
-            twitchUser.profile_image_url,
-            twitchUser.offline_image_url,
-            twitchUser.view_count,
-            new Date(twitchUser.created_at)
-        );
+        return new Streamer({
+            id: Number(twitchUser.id),
+            login: twitchUser.login,
+            displayName: twitchUser.display_name,
+            type: twitchUser.type,
+            broadcasterType: twitchUser.broadcaster_type,
+            description: twitchUser.description,
+            profileImageUrl: twitchUser.profile_image_url,
+            offlineImageUrl: twitchUser.offline_image_url,
+            viewCount: twitchUser.view_count,
+            createdAt: new Date(twitchUser.created_at)
+        });
     }
 }

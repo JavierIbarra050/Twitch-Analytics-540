@@ -45,17 +45,17 @@ describe("StreamerTwitchRepository", () => {
         const result = await repository.searchStreamerById(83232866);
 
         expect(usersClientMock.fetchByIds).toHaveBeenCalledWith([83232866]);
-        expect(result).toEqual(new Streamer(
-            83232866,
-            "ibai_",
-            "Ibai",
-            "",
-            "partner",
-            "Generic streamer description",
-            "https://example.com/ibai.png",
-            "https://example.com/ibai-offline.png",
-            150000,
-            new Date("2026-07-08T13:40:00Z")
-        ));
+        expect(result).toEqual(new Streamer({
+            id: 83232866,
+            login: "ibai_",
+            displayName: "Ibai",
+            type: "",
+            broadcasterType: "partner",
+            description: "Generic streamer description",
+            profileImageUrl: "https://example.com/ibai.png",
+            offlineImageUrl: "https://example.com/ibai-offline.png",
+            viewCount: 150000,
+            createdAt: new Date("2026-07-08T13:40:00Z")
+        }));
     });
 });
