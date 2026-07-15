@@ -39,7 +39,9 @@ describe('GameCacheRepository', () => {
             most_viewed_title: 'Title',
             most_viewed_views: '50000',
             most_viewed_duration: '1h',
-            most_viewed_created_at: '2026-07-09T00:00:00Z'
+            most_viewed_created_at: '2026-07-09T00:00:00Z',
+            video_id: 'v1',
+            user_id: 'u1'
         }];
         dbMock.all.mockResolvedValue(rows);
 
@@ -51,6 +53,64 @@ describe('GameCacheRepository', () => {
         expect(result![0].getTotalVideos()).toBe(4);
         expect(result![0].getTotalViews()).toBe(1000000);
         expect(result![0].getMostViewedViews()).toBe(50000);
+        expect(result![0].getMostViewedVideoId()).toBe('v1');
+        expect(result![0].getMostViewedVideoUserId()).toBe('u1');
+    });
+
+    it('should preserve video id and userId on a write-then-read cache round-trip', async () => {
+        const stat = new TopOfTheTops(
+            new Game('509658', 'Just Chatting'),
+            new Video('v1', 'u1', 'LCK', 'Title', 50000, '1h', '2026-07-09T00:00:00Z'),
+            4,
+            1000000
+        );
+        let insertedRow: Record<string, unknown> | null = null;
+        dbMock.run.mockImplementation(async (sql: string, params: any[] = []) => {
+            if (sql.includes("INSERT INTO game_cache")) {
+                insertedRow = {
+                    game_id: params[0],
+                    game_name: params[1],
+                    user_name: params[2],
+                    total_videos: params[3],
+                    total_views: params[4],
+                    most_viewed_title: params[5],
+                    most_viewed_views: params[6],
+                    most_viewed_duration: params[7],
+                    most_viewed_created_at: params[8],
+                    video_id: params[9],
+                    user_id: params[10]
+                };
+            }
+            return {};
+        });
+
+        await repository.saveCachedStats([stat]);
+
+        dbMock.all.mockResolvedValue([insertedRow]);
+        const result = await repository.getCachedStats();
+
+        expect(result![0].getMostViewedVideoId()).toBe('v1');
+        expect(result![0].getMostViewedVideoUserId()).toBe('u1');
+    });
+
+    it('should return empty strings for video id and userId when reading a row written under the old schema', async () => {
+        const legacyRow = {
+            game_id: '509658',
+            game_name: 'Just Chatting',
+            user_name: 'LCK',
+            total_videos: '4',
+            total_views: '1000000',
+            most_viewed_title: 'Title',
+            most_viewed_views: '50000',
+            most_viewed_duration: '1h',
+            most_viewed_created_at: '2026-07-09T00:00:00Z'
+        };
+        dbMock.all.mockResolvedValue([legacyRow]);
+
+        const result = await repository.getCachedStats();
+
+        expect(result![0].getMostViewedVideoId()).toBe('');
+        expect(result![0].getMostViewedVideoUserId()).toBe('');
     });
 
     it('should delete previous cache and insert new stats inside a transaction', async () => {
@@ -67,7 +127,7 @@ describe('GameCacheRepository', () => {
         expect(dbMock.run).toHaveBeenNthCalledWith(2, "DELETE FROM game_cache");
         expect(dbMock.run).toHaveBeenNthCalledWith(3, expect.stringContaining("INSERT INTO game_cache"), [
             '509658', 'Just Chatting', 'LCK', 4, 1000000,
-            'Title', 50000, '1h', '2026-07-09T00:00:00Z'
+            'Title', 50000, '1h', '2026-07-09T00:00:00Z', 'v1', 'u1'
         ]);
         expect(dbMock.run).toHaveBeenNthCalledWith(4, "COMMIT");
     });

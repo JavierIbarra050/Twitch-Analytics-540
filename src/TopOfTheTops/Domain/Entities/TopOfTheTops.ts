@@ -29,6 +29,14 @@ export class TopOfTheTops {
         return this.totalViews;
     }
 
+    getMostViewedVideoId(): string {
+        return this.mostViewedVideo.getId();
+    }
+
+    getMostViewedVideoUserId(): string {
+        return this.mostViewedVideo.getUserId();
+    }
+
     getMostViewedTitle(): string {
         return this.mostViewedVideo.getTitle();
     }
