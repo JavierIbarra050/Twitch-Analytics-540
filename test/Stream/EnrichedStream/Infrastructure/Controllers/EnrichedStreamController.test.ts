@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { EnrichedStreamController } from '../../../../src/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
-import { EnrichedStreamService } from '../../../../src/EnrichedStream/Application/Services/EnrichedStreamService';
+import { EnrichedStreamController } from '../../../../../src/Stream/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
+import { EnrichedStreamService } from '../../../../../src/Stream/EnrichedStream/Application/Services/EnrichedStreamService';
 import { EnrichedStreamMother } from '../../Mothers/EnrichedStreamMother';
-import { TwitchUnauthorizedError } from '../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
+import { TwitchUnauthorizedError } from '../../../../../src/Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 describe("EnrichedStreamController", () => {
     let controller: EnrichedStreamController;

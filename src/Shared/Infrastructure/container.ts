@@ -10,9 +10,9 @@ import { StreamTwitchRepository } from '../../Stream/Infrastructure/Repositories
 import { StreamService } from '../../Stream/Application/Services/StreamService';
 import { StreamController } from '../../Stream/Infrastructure/Controllers/StreamController';
 
-import { TwitchClient as EnrichedTwitchClient } from '../../EnrichedStream/Infrastructure/Repositories/TwitchClient';
-import { EnrichedStreamService } from '../../EnrichedStream/Application/Services/EnrichedStreamService';
-import { EnrichedStreamController } from '../../EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
+import { TwitchClient as EnrichedTwitchClient } from '../../Stream/EnrichedStream/Infrastructure/Repositories/TwitchClient';
+import { EnrichedStreamService } from '../../Stream/EnrichedStream/Application/Services/EnrichedStreamService';
+import { EnrichedStreamController } from '../../Stream/EnrichedStream/Infrastructure/Controllers/EnrichedStreamController';
 
 import { TwitchClient as TopOfTheTopsTwitchClient } from '../../TopOfTheTops/Infrastructure/Repositories/TwitchClient';
 import { SQLiteGameCacheRepository } from '../../TopOfTheTops/Infrastructure/Repositories/SQLiteGameCacheRepository';

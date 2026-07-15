@@ -1,6 +1,6 @@
 import { ITwitchClient, RawStream, UserProfile } from "../../Domain/Repositories/ITwitchClient";
-import { TwitchHttpClient } from "../../../Shared/Infrastructure/Twitch/TwitchHttpClient";
-import { TwitchStreamResponse, TwitchUserResponse } from "../../../Shared/Infrastructure/Twitch/TwitchApiResponses";
+import { TwitchHttpClient } from "../../../../Shared/Infrastructure/Twitch/TwitchHttpClient";
+import { TwitchStreamResponse, TwitchUserResponse } from "../../../../Shared/Infrastructure/Twitch/TwitchApiResponses";
 
 export class TwitchClient implements ITwitchClient {
     constructor(

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { EnrichedStreamService } from '../../Application/Services/EnrichedStreamService';
-import { TwitchUnauthorizedError } from '../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
+import { TwitchUnauthorizedError } from '../../../../Shared/Infrastructure/Twitch/TwitchUnauthorizedError';
 
 export class EnrichedStreamController {
     constructor(

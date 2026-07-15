@@ -2,7 +2,7 @@ process.env.TWITCH_CLIENT_ID = 'test-client-id';
 process.env.TWITCH_CLIENT_SECRET = 'test-client-secret';
 
 import axios, { AxiosResponse } from 'axios';
-import { TwitchClient } from "EnrichedStream/Infrastructure/Repositories/TwitchClient";
+import { TwitchClient } from "Stream/EnrichedStream/Infrastructure/Repositories/TwitchClient";
 import { TwitchHttpClient } from "Shared/Infrastructure/Twitch/TwitchHttpClient";
 import { TwitchTokenResponse } from "Shared/Infrastructure/Twitch/TwitchTokenResponse";
 import { TwitchStreamResponse, TwitchUserResponse } from "Shared/Infrastructure/Twitch/TwitchApiResponses";

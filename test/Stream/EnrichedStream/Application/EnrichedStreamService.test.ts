@@ -1,5 +1,5 @@
-import { EnrichedStreamService } from "../../../src/EnrichedStream/Application/Services/EnrichedStreamService";
-import { ITwitchClient } from "../../../src/EnrichedStream/Domain/Repositories/ITwitchClient";
+import { EnrichedStreamService } from "../../../../src/Stream/EnrichedStream/Application/Services/EnrichedStreamService";
+import { ITwitchClient } from "../../../../src/Stream/EnrichedStream/Domain/Repositories/ITwitchClient";
 import { EnrichedStreamMother } from "../Mothers/EnrichedStreamMother";
 
 describe("EnrichedStreamService", () => {

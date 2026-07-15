@@ -1,5 +1,5 @@
-import { EnrichedStream } from "../../../src/EnrichedStream/Domain/Entities/EnrichedStream";
-import { RawStream, UserProfile } from "../../../src/EnrichedStream/Domain/Repositories/ITwitchClient";
+import { EnrichedStream } from "../../../../src/Stream/EnrichedStream/Domain/Entities/EnrichedStream";
+import { RawStream, UserProfile } from "../../../../src/Stream/EnrichedStream/Domain/Repositories/ITwitchClient";
 
 export class EnrichedStreamMother {
     static create(params: Partial<{
