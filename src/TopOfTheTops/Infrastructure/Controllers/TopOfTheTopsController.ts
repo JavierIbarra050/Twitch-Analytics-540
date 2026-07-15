@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { TopOfTheTopsService } from "../../Application/Services/TopOfTheTopsService";
+import { parsePositiveIntQueryParam } from "../../../Shared/Infrastructure/Http/QueryParamParser";
 
 export class TopOfTheTopsController {
     constructor(private readonly service: TopOfTheTopsService) {}
@@ -10,11 +11,13 @@ export class TopOfTheTopsController {
             let since: number | undefined;
 
             if (sinceQuery !== undefined) {
-                if (typeof sinceQuery !== 'string' || !/^\d+$/.test(sinceQuery)) {
+                const parsedSince = parsePositiveIntQueryParam(sinceQuery);
+
+                if (parsedSince === null) {
                     res.status(400).json({ error: "Bad Request. Invalid or missing parameters." });
                     return;
                 }
-                since = parseInt(sinceQuery, 10);
+                since = parsedSince;
             }
 
             const stats = await this.service.getTopOfTheTops(since);

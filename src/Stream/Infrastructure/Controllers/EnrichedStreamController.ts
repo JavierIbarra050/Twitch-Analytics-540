@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { StreamService } from '../../Application/Services/StreamService';
+import { parsePositiveIntQueryParam } from '../../../Shared/Infrastructure/Http/QueryParamParser';
 
 export class EnrichedStreamController {
     constructor(
@@ -8,16 +9,9 @@ export class EnrichedStreamController {
 
     public getTopEnrichedStreams = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const limitParam = req.query.limit;
+            const limit = parsePositiveIntQueryParam(req.query.limit);
 
-            if (typeof limitParam !== 'string' || !/^\d+$/.test(limitParam)) {
-                res.status(400).json({ error: "Invalid 'limit' parameter." });
-                return;
-            }
-
-            const limit = parseInt(limitParam, 10);
-
-            if (limit <= 0) {
+            if (limit === null || limit <= 0) {
                 res.status(400).json({ error: "Invalid 'limit' parameter." });
                 return;
             }
