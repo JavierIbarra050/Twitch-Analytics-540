@@ -1,13 +1,19 @@
+import { Stream } from "./Stream";
+
 export class EnrichedStream {
+    private readonly stream: Stream;
+
     constructor(
         private readonly streamId: string,
         private readonly userId: string,
-        private readonly userName: string,
+        userName: string,
         private readonly viewerCount: number,
-        private readonly title: string,
+        title: string,
         private readonly userDisplayName: string,
         private readonly profileImageUrl: string,
-    ) {}
+    ) {
+        this.stream = new Stream(title, userName);
+    }
 
     getStreamId(): string {
         return this.streamId;
@@ -18,7 +24,7 @@ export class EnrichedStream {
     }
 
     getUserName(): string {
-        return this.userName;
+        return this.stream.getUserName();
     }
 
     getViewerCount(): number {
@@ -26,7 +32,7 @@ export class EnrichedStream {
     }
 
     getTitle(): string {
-        return this.title;
+        return this.stream.getTitle();
     }
 
     getUserDisplayName(): string {
