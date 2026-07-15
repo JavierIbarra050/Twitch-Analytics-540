@@ -189,6 +189,15 @@ El flujo para obtener credenciales es en dos pasos:
 
 El token se valida en cada petición contra la base de datos a través de `AuthMiddleware`, comprobando que existe y que no ha superado su fecha de expiración.
 
+### Rate limiting
+
+La API implementa dos límites de peticiones (vía `express-rate-limit`) para proteger la cuota compartida de la API de Twitch frente a abusos:
+
+- **`POST /register` y `POST /token`** — 20 peticiones cada 15 minutos, por IP. Son rutas sin autenticación y las más expuestas a abuso.
+- **`/analytics/*`** — 100 peticiones por minuto, por token de sesión (no por IP), ya que estas rutas requieren autenticación.
+
+Al superar el límite, la API responde `429 Too Many Requests` con `{ "error": "Too many requests. Please try again later." }`. Los valores están definidos como constantes en `src/Shared/Infrastructure/Middlewares/RateLimiter.ts`.
+
 ## Endpoints de la API
 
 ### POST /register

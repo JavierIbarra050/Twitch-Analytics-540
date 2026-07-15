@@ -42,6 +42,25 @@ describe('TwitchHttpClient', () => {
         expect(result).toEqual({ data: [] });
     });
 
+    it('should request the access token with the required Twitch OAuth parameters', async () => {
+        mockedAxios.get.mockResolvedValueOnce({ data: { data: [] } });
+
+        const client = new TwitchHttpClient(mockConfig);
+        await client.get('streams');
+
+        expect(mockedAxios.post).toHaveBeenCalledWith(
+            'https://id.twitch.tv/oauth2/token',
+            null,
+            expect.objectContaining({
+                params: {
+                    client_id: mockConfig.twitchClientId,
+                    client_secret: mockConfig.twitchClientSecret,
+                    grant_type: 'client_credentials'
+                }
+            })
+        );
+    });
+
     it('should retry once with a fresh token when the first request returns 401', async () => {
         mockedAxios.get
             .mockRejectedValueOnce(unauthorizedError)
