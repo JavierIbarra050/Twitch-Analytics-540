@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import analyticsRoutes from "./Streamer/Infrastructure/Routes/analyticsRoutes";
+import analyticsRoutes from "./Shared/Infrastructure/Routes/analyticsRoutes";
 import userRoutes from "./User/Infrastructure/Routes/userRoutes";
 
 const app = express();
