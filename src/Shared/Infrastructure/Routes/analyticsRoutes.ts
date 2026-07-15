@@ -5,7 +5,7 @@ import {
     streamController,
     enrichedStreamController,
     topOfTheTopsController
-} from '../../../Shared/Infrastructure/container';
+} from '../container';
 
 const router = Router();
 
