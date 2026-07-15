@@ -201,7 +201,7 @@ describe('End-to-End Analytics API Flow', () => {
         mockedAxios.get.mockResolvedValueOnce({
             data: {
                 data: [
-                    { id: 'v1', user_name: 'User 1', title: 'Top Video', view_count: 1000, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
+                    { id: 'v1', user_id: '456', user_name: 'User 1', title: 'Top Video', view_count: 1000, duration: '10m', created_at: '2026-07-09T00:00:00Z' }
                 ]
             }
         });
