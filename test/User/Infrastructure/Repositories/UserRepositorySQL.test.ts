@@ -20,32 +20,6 @@ describe('UserRepositorySQL', () => {
         repository = new UserRepositorySQL();
     });
 
-    describe('doesUserAlreadyExists', () => {
-        it('should return true when user exists in DB', async () => {
-            mockDb.get.mockResolvedValue({ id: 1 });
-
-            const result = await repository.doesUserAlreadyExists('existing@example.com');
-
-            expect(mockDb.get).toHaveBeenCalledWith(
-                'SELECT id FROM users WHERE email = ?',
-                ['existing@example.com']
-            );
-            expect(result).toBe(true);
-        });
-
-        it('should return false when user does not exist', async () => {
-            mockDb.get.mockResolvedValue(undefined);
-
-            const result = await repository.doesUserAlreadyExists('new@example.com');
-
-            expect(mockDb.get).toHaveBeenCalledWith(
-                'SELECT id FROM users WHERE email = ?',
-                ['new@example.com']
-            );
-            expect(result).toBe(false);
-        });
-    });
-
     describe('saveUser', () => {
         it('should insert a new user and return a User entity', async () => {
             const email = 'newuser@example.com';

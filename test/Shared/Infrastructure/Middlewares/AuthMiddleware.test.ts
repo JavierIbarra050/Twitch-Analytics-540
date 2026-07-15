@@ -13,7 +13,6 @@ describe("AuthMiddleware", () => {
 
     beforeEach(() => {
         userRepositoryMock = {
-            doesUserAlreadyExists: jest.fn(),
             saveUser: jest.fn(),
             findByEmail: jest.fn(),
             saveToken: jest.fn(),

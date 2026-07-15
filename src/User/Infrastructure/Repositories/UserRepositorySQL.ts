@@ -4,15 +4,6 @@ import { IUserRepository } from '../../Domain/Repositories/IUserRepository';
 
 export class UserRepositorySQL implements IUserRepository {
 
-    async doesUserAlreadyExists(email: string): Promise<boolean> {
-        const db = await getDatabase();
-        const row = await db.get<{ id: number }>(
-            'SELECT id FROM users WHERE email = ?',
-            [email]
-        );
-        return !!row;
-    }
-
     async saveUser(email: string, apiKey: string): Promise<User> {
         const db = await getDatabase();
         if (db.type === 'mysql') {
