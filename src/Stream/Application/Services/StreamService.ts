@@ -10,8 +10,8 @@ export class StreamService {
         private readonly streamRepository: IStreamRepository,
     ) { }
 
-    async getLiveStreams(): Promise<Stream[]> {
-        return await this.streamRepository.getLiveStreams();
+    async getLiveStreams(limit?: number): Promise<Stream[]> {
+        return await this.streamRepository.getLiveStreams(limit);
     }
 
     async getTopEnrichedStreams(limit: number): Promise<EnrichedStream[]> {

@@ -103,6 +103,51 @@ describe("StreamTwitchRepository", () => {
 
             await expect(repository.getLiveStreams()).rejects.toThrow("Twitch Helix API error");
         });
+
+        it("should fetch live streams with the given limit when provided", async () => {
+            const twitchStreamMock: TwitchStreamResponse = {
+                data: [
+                    {
+                        id: "12345",
+                        user_id: "83232866",
+                        user_login: "ibai",
+                        user_name: "Ibai",
+                        game_id: "509658",
+                        game_name: "Just Chatting",
+                        type: "live",
+                        title: "Charlando un rato",
+                        viewer_count: 45000,
+                        started_at: "2026-07-09T08:00:00Z",
+                        language: "es",
+                        thumbnail_url: "https://static-cdn/live.png",
+                        tag_ids: [],
+                        is_mature: false
+                    }
+                ]
+            };
+
+            const streamResponse: Partial<AxiosResponse<TwitchStreamResponse>> = {
+                data: twitchStreamMock
+            };
+
+            mockedAxios.get.mockResolvedValue(streamResponse);
+
+            const streams = await repository.getLiveStreams(1);
+
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                'https://api.twitch.tv/helix/streams',
+                {
+                    headers: {
+                        'Client-Id': 'test-client-id',
+                        'Authorization': 'Bearer mocked-token'
+                    },
+                    params: { first: "1" }
+                }
+            );
+
+            expect(streams.length).toBe(1);
+            expect(streams[0]).toBeInstanceOf(Stream);
+        });
     });
 
     describe("getRawLiveStreams", () => {

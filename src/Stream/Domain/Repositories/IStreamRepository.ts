@@ -15,7 +15,7 @@ export interface UserProfile {
 }
 
 export interface IStreamRepository {
-    getLiveStreams(): Promise<Stream[]>;
+    getLiveStreams(limit?: number): Promise<Stream[]>;
     getRawLiveStreams(limit: number): Promise<RawStream[]>;
     getUsersProfiles(userIds: string[]): Promise<UserProfile[]>;
 }
