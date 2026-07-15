@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { StreamerService } from "../../Application/Services/StreamerService";
+import { parsePositiveIntQueryParam } from '../../../Shared/Infrastructure/Http/QueryParamParser';
 
 export class StreamerController {
     constructor (
@@ -8,14 +9,12 @@ export class StreamerController {
 
     public getStreamerById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const idParam = req.query.id;
+            const idParamNumber = parsePositiveIntQueryParam(req.query.id);
 
-            if (typeof idParam !== 'string' || !/^\d+$/.test(idParam)) {
+            if (idParamNumber === null) {
                 res.status(400).json({ error: "Invalid or missing 'id' parameter." });
                 return;
             }
-
-            const idParamNumber = parseInt(idParam, 10);
 
             const streamer = await this.streamerService.getStreamerById(idParamNumber);
 
