@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, RequestHandler, Response } from 'express';
 import rateLimit, { ipKeyGenerator, Options } from 'express-rate-limit';
 
 export const AUTH_ROUTES_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -13,7 +13,7 @@ type RateLimiterConfig = Pick<Options, 'windowMs' | 'limit'> & Partial<Pick<Opti
 
 const isTestEnvironment = (): boolean => process.env.NODE_ENV === 'test';
 
-export const createRateLimiter = (config: RateLimiterConfig) => rateLimit({
+export const createRateLimiter: (config: RateLimiterConfig) => RequestHandler = (config) => rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skip: config.skip ?? (() => isTestEnvironment()),
